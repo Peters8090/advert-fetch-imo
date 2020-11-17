@@ -1,0 +1,26 @@
+{
+  "name": "advert_fetch_imo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist",
+  "scripts": {
+    "start": "webpack --config webpack.config.js --watch",
+    "build": "webpack --config webpack.config.prod.js"
+  },
+  "author": "Piotr Bartoszewski",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "concurrently": "^5.3.0",
+    "nodemon": "^2.0.5",
+    "nodemon-webpack-plugin": "^4.3.2",
+    "ts-loader": "^8.0.7",
+    "typescript": "^4.0.3",
+    "webpack": "^5.3.2",
+    "webpack-cli": "^4.1.0",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@types/node": "^14.14.0"
+  }
+}
