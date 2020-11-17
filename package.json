@@ -21,6 +21,11 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "@types/node": "^14.14.0"
+    "@types/lodash": "^4.14.165",
+    "@types/node": "^14.14.0",
+    "@types/promise-fs": "^2.1.1",
+    "extract-zip": "^2.0.1",
+    "lodash": "^4.17.20",
+    "promise-fs": "^2.1.1"
   }
 }
