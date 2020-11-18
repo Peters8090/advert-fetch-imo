@@ -58,6 +58,10 @@ const expandedLog = (data: any) =>
     }
   );
 
+  unpackedFilesNotAddedToDb.sort();
+
+  console.log(unpackedFilesNotAddedToDb);
+
   const OFFERS_XML_FILENAME = "oferty.xml";
 
   const offerFileContentsNotAddedToDb = await Promise.all(
@@ -68,29 +72,11 @@ const expandedLog = (data: any) =>
         )
       ).toString();
 
-      return {
-        els: xml2js(xmlContent).elements as Element[],
-        date: (xml2js(xmlContent)
-          .elements as Element[])[0].elements?.[0]?.elements?.find(
-          (el) => el.name === "data"
-        )?.elements?.[0].text!,
-      };
+      return xml2js(xmlContent).elements as Element[];
     })
   );
 
-  offerFileContentsNotAddedToDb.sort((a, b) => {
-    const getDate = (of: Element[]) =>
-      Date.parse(
-        of[0].elements?.[0]?.elements?.find((el) => el.name === "data")
-          ?.elements?.[0].text!
-      );
-
-    return getDate(a.els) - getDate(b.els);
-  });
-
-  console.log(offerFileContentsNotAddedToDb);
-
-  //
+  expandedLog(offerFileContentsNotAddedToDb);
 
   // console.log(JSON.stringify(offerFileContentsNotAddedToDb[0], null, 2));
 
