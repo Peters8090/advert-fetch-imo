@@ -1,8 +1,19 @@
 import extract from "extract-zip";
 import fs from "promise-fs";
 import lodash from "lodash";
+import { xml2js } from "xml-js";
 
 console.time();
+
+type Element = {
+  name?: string;
+  text?: string;
+  type: "element" | "text";
+  elements?: Element[];
+};
+const expandedLog = (data: any) =>
+  console.log(JSON.stringify(data, undefined, 2));
+
 (async () => {
   const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
   const PACKED_ADVERTS_DIR = "adverts_packed";
@@ -25,18 +36,69 @@ console.time();
     });
   }
 
-  const unpackedFiles = await fs.readdir(UNPACKED_ADVERTS_DIR);
-  for (const unpackedFile of unpackedFiles) {
-    const ADDED_TO_DB_FILE_NAME = "added-to-db.txt";
+  let unpackedFiles = await fs.readdir(UNPACKED_ADVERTS_DIR);
 
-    if (
-      !(await fs.readdir(`${UNPACKED_ADVERTS_DIR}/${unpackedFile}`)).includes(
-        ADDED_TO_DB_FILE_NAME
-      )
-    ) {
-      // not added to db
+  const asyncFilter = async <T>(
+    arr: T[],
+    predicate: (el: T) => Promise<boolean>
+  ) => {
+    const results = await Promise.all(arr.map(predicate));
+
+    return arr.filter((_v, index) => results[index]);
+  };
+
+  const ADDED_TO_DB_FILE_NAME = "added-to-db.txt";
+
+  const unpackedFilesNotAddedToDb = await asyncFilter(
+    unpackedFiles,
+    async (unpackedFile) => {
+      return !(
+        await fs.readdir(`${UNPACKED_ADVERTS_DIR}/${unpackedFile}`)
+      ).includes(ADDED_TO_DB_FILE_NAME);
     }
-  }
+  );
 
+  const OFFERS_XML_FILENAME = "oferty.xml";
+
+  const offerFileContentsNotAddedToDb = await Promise.all(
+    unpackedFilesNotAddedToDb.map(async (file) => {
+      const xmlContent = (
+        await fs.readFile(
+          `${UNPACKED_ADVERTS_DIR}/${file}/${OFFERS_XML_FILENAME}`
+        )
+      ).toString();
+
+      return {
+        els: xml2js(xmlContent).elements as Element[],
+        date: (xml2js(xmlContent)
+          .elements as Element[])[0].elements?.[0]?.elements?.find(
+          (el) => el.name === "data"
+        )?.elements?.[0].text!,
+      };
+    })
+  );
+
+  offerFileContentsNotAddedToDb.sort((a, b) => {
+    const getDate = (of: Element[]) =>
+      Date.parse(
+        of[0].elements?.[0]?.elements?.find((el) => el.name === "data")
+          ?.elements?.[0].text!
+      );
+
+    return getDate(a.els) - getDate(b.els);
+  });
+
+  console.log(offerFileContentsNotAddedToDb);
+
+  //
+
+  // console.log(JSON.stringify(offerFileContentsNotAddedToDb[0], null, 2));
+
+  // for (const unpackedFile of unpackedFilesNotAddedToDb) {
+  //   //   fs.writeFile(
+  //   //     `${UNPACKED_ADVERTS_DIR}/${unpackedFile}/${ADDED_TO_DB_FILE_NAME}`,
+  //   //     "yes"
+  //   //   );
+  // }
   console.timeEnd();
 })();

@@ -26,6 +26,7 @@
     "@types/promise-fs": "^2.1.1",
     "extract-zip": "^2.0.1",
     "lodash": "^4.17.20",
-    "promise-fs": "^2.1.1"
+    "promise-fs": "^2.1.1",
+    "xml-js": "^1.6.11"
   }
 }
