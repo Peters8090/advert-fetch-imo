@@ -3,6 +3,7 @@ import fs from "promise-fs";
 import lodash from "lodash";
 import { xml2js } from "xml-js";
 import ncp from "copy-paste";
+import http from "http";
 
 console.time();
 
@@ -153,8 +154,14 @@ const expandedLog = (data: any) =>
       });
     });
   }
-
   console.log(offers);
+
+  const server = http.createServer((req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.writeHead(200);
+    res.end(JSON.stringify(offers));
+  });
+  server.listen(8080);
 
   console.timeEnd();
 })();
