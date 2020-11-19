@@ -95,46 +95,50 @@ const expandedLog = (data: any) =>
     const zdjecia = offer.find(({ name }) => name === "zdjecia");
     const zawartosc_pliku = header?.elements?.find(
       ({ name }) => name === "zawartosc_pliku"
-    )?.elements?.[0]?.text;
+    )?.elements?.[0]?.text as "calosc" | "roznica";
 
-    if (zawartosc_pliku === "roznica") {
-      lista_ofert?.elements?.forEach((dzial) => {
-        const dzialAttributes = dzial.attributes as {
-          tab: string;
-          typ: string;
+    lista_ofert?.elements?.forEach((dzial) => {
+      const dzialAttributes = dzial.attributes as {
+        tab: string;
+        typ: string;
+      };
+
+      dzial?.elements?.forEach((oferta) => {
+        const id = oferta.elements?.find(({ name }) => name === "id")
+          ?.elements?.[0].text;
+        const cenaEntry = oferta.elements?.find(({ name }) => name === "cena");
+        const cena = {
+          waluta: cenaEntry?.attributes?.waluta,
+          value: cenaEntry?.elements?.[0].text,
         };
 
-        dzial?.elements?.forEach((oferta) => {
-          const id = oferta.elements?.find(({ name }) => name === "id")
-            ?.elements?.[0].text;
-          const cenaEntry = oferta.elements?.find(
-            ({ name }) => name === "cena"
-          );
-          const cena = {
-            waluta: cenaEntry?.attributes?.waluta,
-            value: cenaEntry?.elements?.[0].text,
-          };
-          const location = oferta?.elements
-            ?.find(({ name }) => name === "location")
-            ?.elements?.map((el) => el.elements?.[0].text)
-            .reverse()
-            .filter((_, i) => i !== 1)
-            .join(", ");
+        const location = oferta?.elements
+          ?.find(({ name }) => name === "location")
+          ?.elements?.map((el) => el.elements?.[0].text)
+          .reverse()
+          .filter((_, i) => i !== 1)
+          .join(", ");
 
-          const params = oferta.elements
-            ?.filter((el) => el.name === "param")
-            .map((param) => [
-              param.attributes?.nazwa,
+        const params = oferta.elements
+          ?.filter((el) => el.name === "param")
+          .map((param) => [
+            param.attributes?.nazwa,
 
-              param.attributes?.nazwa === "opis"
-                ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
-                : param.elements?.[0].text,
-            ]);
+            param.attributes?.nazwa === "opis"
+              ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
+              : param.elements?.[0].text,
+          ])
+          .filter(([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key));
 
-          console.log({ id, cena, location, ...Object.fromEntries(params!) });
+        console.log({
+          id,
+          cena,
+          location,
+          ...Object.fromEntries(params!),
+          dzial: dzialAttributes,
         });
       });
-    }
+    });
   }
   console.timeEnd();
 })();
