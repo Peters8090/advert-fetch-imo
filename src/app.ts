@@ -114,13 +114,11 @@ const expandedLog = (data: any) =>
             waluta: cenaEntry?.attributes?.waluta,
             value: cenaEntry?.elements?.[0].text,
           };
-          const location = lodash
-            .uniq(
-              oferta?.elements
-                ?.find(({ name }) => name === "location")
-                ?.elements?.map((el) => el.elements?.[0].text)
-                .reverse()
-            )
+          const location = oferta?.elements
+            ?.find(({ name }) => name === "location")
+            ?.elements?.map((el) => el.elements?.[0].text)
+            .reverse()
+            .filter((_, i) => i !== 1)
             .join(", ");
 
           const params = oferta.elements
