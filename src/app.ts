@@ -2,15 +2,20 @@ import extract from "extract-zip";
 import fs from "promise-fs";
 import lodash from "lodash";
 import { xml2js } from "xml-js";
+import ncp from "copy-paste";
 
 console.time();
 
 type Element = {
   name?: string;
   text?: string;
+  attributes?: object;
   type: "element" | "text";
   elements?: Element[];
 };
+
+type ConvertedXml = Element[];
+
 const expandedLog = (data: any) =>
   console.log(JSON.stringify(data, undefined, 2));
 
@@ -72,19 +77,20 @@ const expandedLog = (data: any) =>
         )
       ).toString();
 
-      return xml2js(xmlContent).elements as Element[];
+      return xml2js(xmlContent).elements[0].elements as ConvertedXml;
     })
   );
 
-  expandedLog(offerFileContentsNotAddedToDb);
+  ncp.copy(JSON.stringify(offerFileContentsNotAddedToDb[0]));
+  console.log("a");
 
-  // console.log(JSON.stringify(offerFileContentsNotAddedToDb[0], null, 2));
+  // const offers
 
-  // for (const unpackedFile of unpackedFilesNotAddedToDb) {
-  //   //   fs.writeFile(
-  //   //     `${UNPACKED_ADVERTS_DIR}/${unpackedFile}/${ADDED_TO_DB_FILE_NAME}`,
-  //   //     "yes"
-  //   //   );
-  // }
+  for (const offerFileContent of offerFileContentsNotAddedToDb) {
+    //   fs.writeFile(
+    //     `${UNPACKED_ADVERTS_DIR}/${unpackedFile}/${ADDED_TO_DB_FILE_NAME}`,
+    //     "yes"
+    //   );
+  }
   console.timeEnd();
 })();
