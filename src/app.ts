@@ -87,7 +87,7 @@ const expandedLog = (data: any) =>
 
   for (const [i, offer] of offerFileContentsNotAddedToDb.entries()) {
     if (i > 0) {
-      break;
+      // break;
     }
 
     const header = offer.find(({ name }) => name === "header");
@@ -123,7 +123,17 @@ const expandedLog = (data: any) =>
             )
             .join(", ");
 
-          console.log(id, cena, location);
+          const params = oferta.elements
+            ?.filter((el) => el.name === "param")
+            .map((param) => [
+              param.attributes?.nazwa,
+
+              param.attributes?.nazwa === "opis"
+                ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
+                : param.elements?.[0].text,
+            ]);
+
+          console.log({ id, cena, location, ...Object.fromEntries(params!) });
         });
       });
     }
