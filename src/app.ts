@@ -83,19 +83,19 @@ const expandedLog = (data: any) =>
 
   // ncp.copy(JSON.stringify(offerFileContentsNotAddedToDb[0]));
 
-  const offers: Record<string, string>[] = [];
+  let offers: Record<string, string>[] = [];
 
-  for (const [i, offer] of offerFileContentsNotAddedToDb.entries()) {
-    if (i > 0) {
-      // break;
-    }
-
-    const header = offer.find(({ name }) => name === "header");
-    const lista_ofert = offer.find(({ name }) => name === "lista_ofert");
-    const zdjecia = offer.find(({ name }) => name === "zdjecia");
+  for (const xmlContent of offerFileContentsNotAddedToDb) {
+    const header = xmlContent.find(({ name }) => name === "header");
+    const lista_ofert = xmlContent.find(({ name }) => name === "lista_ofert");
+    const zdjecia = xmlContent.find(({ name }) => name === "zdjecia");
     const zawartosc_pliku = header?.elements?.find(
       ({ name }) => name === "zawartosc_pliku"
     )?.elements?.[0]?.text as "calosc" | "roznica";
+
+    if (zawartosc_pliku === "calosc") {
+      offers = [];
+    }
 
     lista_ofert?.elements?.forEach((dzial) => {
       const dzialAttributes = dzial.attributes as {
@@ -106,6 +106,12 @@ const expandedLog = (data: any) =>
       dzial?.elements?.forEach((oferta) => {
         const id = oferta.elements?.find(({ name }) => name === "id")
           ?.elements?.[0].text;
+
+        if (oferta.name === "oferta_usun") {
+          offers = offers.filter((offer) => offer.id === id);
+          return;
+        }
+
         const cenaEntry = oferta.elements?.find(({ name }) => name === "cena");
         const cena = {
           waluta: cenaEntry?.attributes?.waluta,
