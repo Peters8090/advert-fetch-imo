@@ -83,7 +83,7 @@ const expandedLog = (data: any) =>
 
   // ncp.copy(JSON.stringify(offerFileContentsNotAddedToDb[0]));
 
-  const oferty: any[] = [];
+  const offers: Record<string, string>[] = [];
 
   for (const [i, offer] of offerFileContentsNotAddedToDb.entries()) {
     if (i > 0) {
@@ -130,15 +130,25 @@ const expandedLog = (data: any) =>
           ])
           .filter(([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key));
 
-        console.log({
+        const newOffer = {
           id,
           cena,
           location,
           ...Object.fromEntries(params!),
           dzial: dzialAttributes,
-        });
+        };
+
+        const foundOffer = offers.find((offer) => offer.id === id);
+        if (foundOffer) {
+          offers[offers.indexOf(foundOffer)] = { ...foundOffer, ...newOffer };
+        } else {
+          offers.push(newOffer);
+        }
       });
     });
   }
+
+  console.log(offers);
+
   console.timeEnd();
 })();
