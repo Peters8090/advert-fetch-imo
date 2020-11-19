@@ -9,7 +9,7 @@ console.time();
 type Element = {
   name?: string;
   text?: string;
-  attributes?: object;
+  attributes?: Record<string, string>;
   type: "element" | "text";
   elements?: Element[];
 };
@@ -81,16 +81,52 @@ const expandedLog = (data: any) =>
     })
   );
 
-  ncp.copy(JSON.stringify(offerFileContentsNotAddedToDb[0]));
-  console.log("a");
+  // ncp.copy(JSON.stringify(offerFileContentsNotAddedToDb[0]));
 
-  // const offers
+  const oferty: any[] = [];
 
-  for (const offerFileContent of offerFileContentsNotAddedToDb) {
-    //   fs.writeFile(
-    //     `${UNPACKED_ADVERTS_DIR}/${unpackedFile}/${ADDED_TO_DB_FILE_NAME}`,
-    //     "yes"
-    //   );
+  for (const [i, offer] of offerFileContentsNotAddedToDb.entries()) {
+    if (i > 0) {
+      break;
+    }
+
+    const header = offer.find(({ name }) => name === "header");
+    const lista_ofert = offer.find(({ name }) => name === "lista_ofert");
+    const zdjecia = offer.find(({ name }) => name === "zdjecia");
+    const zawartosc_pliku = header?.elements?.find(
+      ({ name }) => name === "zawartosc_pliku"
+    )?.elements?.[0]?.text;
+
+    if (zawartosc_pliku === "roznica") {
+      lista_ofert?.elements?.forEach((dzial) => {
+        const dzialAttributes = dzial.attributes as {
+          tab: string;
+          typ: string;
+        };
+
+        dzial?.elements?.forEach((oferta) => {
+          const id = oferta.elements?.find(({ name }) => name === "id")
+            ?.elements?.[0].text;
+          const cenaEntry = oferta.elements?.find(
+            ({ name }) => name === "cena"
+          );
+          const cena = {
+            waluta: cenaEntry?.attributes?.waluta,
+            value: cenaEntry?.elements?.[0].text,
+          };
+          const location = lodash
+            .uniq(
+              oferta?.elements
+                ?.find(({ name }) => name === "location")
+                ?.elements?.map((el) => el.elements?.[0].text)
+                .reverse()
+            )
+            .join(", ");
+
+          console.log(id, cena, location);
+        });
+      });
+    }
   }
   console.timeEnd();
 })();
