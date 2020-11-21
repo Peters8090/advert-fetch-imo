@@ -119,7 +119,7 @@ export const fetchNewOffers = async (
           .filter(([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key));
 
         const newOffer = {
-          id,
+          imoId: id,
           cena,
           location,
           ...Object.fromEntries(params!),
