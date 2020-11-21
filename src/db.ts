@@ -8,7 +8,7 @@ const addedToDbFilesSchema = new mongoose.Schema({ fileName: String });
 const AddedToDbFiles = mongoose.model("addedToDbFiles", addedToDbFilesSchema);
 
 export const dbInit = () => {
-  mongoose.connect(important_data.dbUri, { useNewUrlParser: true });
+  return mongoose.connect(important_data.dbUri, { useNewUrlParser: true });
 };
 
 export const addAddedToDbFile = (fileName: string) => {

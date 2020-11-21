@@ -93,52 +93,58 @@ export const fetchNewOffers = async () => {
         typ: string;
       };
 
-      for (const oferta of dzial!.elements!) {
-        const id = oferta.elements?.find(({ name }) => name === "id")
-          ?.elements?.[0].text;
+      if (dzial?.elements) {
+        for (const oferta of dzial!.elements!) {
+          const id = oferta.elements?.find(({ name }) => name === "id")
+            ?.elements?.[0].text;
 
-        if (oferta.name === "oferta_usun") {
-          await removeOffer(id!);
-          return;
-        }
+          if (oferta.name === "oferta_usun") {
+            await removeOffer(id!);
+            return;
+          }
 
-        const cenaEntry = oferta.elements?.find(({ name }) => name === "cena");
-        const cena = {
-          waluta: cenaEntry?.attributes?.waluta,
-          value: cenaEntry?.elements?.[0].text,
-        };
+          const cenaEntry = oferta.elements?.find(
+            ({ name }) => name === "cena"
+          );
+          const cena = {
+            waluta: cenaEntry?.attributes?.waluta,
+            value: cenaEntry?.elements?.[0].text,
+          };
 
-        const location = oferta?.elements
-          ?.find(({ name }) => name === "location")
-          ?.elements?.map((el) => el.elements?.[0].text)
-          .reverse()
-          .filter((_, i) => i !== 1)
-          .join(", ");
+          const location = oferta?.elements
+            ?.find(({ name }) => name === "location")
+            ?.elements?.map((el) => el.elements?.[0].text)
+            .reverse()
+            .filter((_, i) => i !== 1)
+            .join(", ");
 
-        const params = oferta.elements
-          ?.filter((el) => el.name === "param")
-          .map((param) => [
-            param.attributes?.nazwa,
+          const params = oferta.elements
+            ?.filter((el) => el.name === "param")
+            .map((param) => [
+              param.attributes?.nazwa,
 
-            param.attributes?.nazwa === "opis"
-              ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
-              : param.elements?.[0].text,
-          ])
-          .filter(([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key));
+              param.attributes?.nazwa === "opis"
+                ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
+                : param.elements?.[0].text,
+            ])
+            .filter(
+              ([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key)
+            );
 
-        const newOffer = {
-          imoId: id,
-          cena,
-          location,
-          ...Object.fromEntries(params!),
-          dzial: dzialAttributes,
-        };
+          const newOffer = {
+            imoId: id,
+            cena,
+            location,
+            ...Object.fromEntries(params!),
+            dzial: dzialAttributes,
+          };
 
-        const foundOffer = await findOffer(id!);
-        if (foundOffer) {
-          await alterOffer(id!, newOffer);
-        } else {
-          await addOffer(newOffer);
+          const foundOffer = id ? await findOffer(id!) : null;
+          if (foundOffer) {
+            await alterOffer(id!, newOffer);
+          } else {
+            await addOffer(newOffer);
+          }
         }
       }
     }
