@@ -4,11 +4,17 @@ import lodash from "lodash";
 import { xml2js } from "xml-js";
 import ncp from "copy-paste";
 import http from "http";
+import {
+  addAddedToDbFile,
+  addOffer,
+  alterOffer,
+  dropAllOffers,
+  findOffer,
+  getAllAddedToDbFiles,
+  removeOffer,
+} from "./db";
 
-export const fetchNewOffers = async (
-  offers: Record<string, string>[],
-  addedToDbFiles: string[]
-) => {
+export const fetchNewOffers = async () => {
   const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
   const PACKED_ADVERTS_DIR = "adverts_packed";
 
@@ -32,13 +38,15 @@ export const fetchNewOffers = async (
 
   let unpackedFiles = await fs.readdir(UNPACKED_ADVERTS_DIR);
 
+  const addedToDbFiles = ((await getAllAddedToDbFiles()) as {
+    fileName: string;
+  }[]).map((el) => el.fileName);
+
   const unpackedFilesNotAddedToDb = unpackedFiles.filter(
     (file) => !addedToDbFiles.includes(file)
   );
 
   unpackedFilesNotAddedToDb.sort();
-
-  console.log(unpackedFilesNotAddedToDb);
 
   const OFFERS_XML_FILENAME = "oferty.xml";
 
@@ -76,21 +84,21 @@ export const fetchNewOffers = async (
     )?.elements?.[0]?.text as "calosc" | "roznica";
 
     if (zawartosc_pliku === "calosc") {
-      offers = [];
+      await dropAllOffers();
     }
 
-    lista_ofert?.elements?.forEach((dzial) => {
+    for (const dzial of lista_ofert?.elements!) {
       const dzialAttributes = dzial.attributes as {
         tab: string;
         typ: string;
       };
 
-      dzial?.elements?.forEach((oferta) => {
+      for (const oferta of dzial!.elements!) {
         const id = oferta.elements?.find(({ name }) => name === "id")
           ?.elements?.[0].text;
 
         if (oferta.name === "oferta_usun") {
-          offers = offers.filter((offer) => offer.id === id);
+          await removeOffer(id!);
           return;
         }
 
@@ -126,15 +134,15 @@ export const fetchNewOffers = async (
           dzial: dzialAttributes,
         };
 
-        const foundOffer = offers.find((offer) => offer.id === id);
+        const foundOffer = await findOffer(id!);
         if (foundOffer) {
-          offers[offers.indexOf(foundOffer)] = { ...foundOffer, ...newOffer };
+          await alterOffer(id!, newOffer);
         } else {
-          offers.push(newOffer);
+          await addOffer(newOffer);
         }
-      });
-    });
+      }
+    }
 
-    addedToDbFiles.push(fileName);
+    await addAddedToDbFile(fileName);
   }
 };

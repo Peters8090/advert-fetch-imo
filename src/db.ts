@@ -7,7 +7,7 @@ const Offers = mongoose.model("offers", offersSchema);
 const addedToDbFilesSchema = new mongoose.Schema({ fileName: String });
 const AddedToDbFiles = mongoose.model("addedToDbFiles", addedToDbFilesSchema);
 
-export const init = () => {
+export const dbInit = () => {
   mongoose.connect(important_data.dbUri, { useNewUrlParser: true });
 };
 
@@ -29,7 +29,7 @@ export const addOffer = (properties: object) => {
   return new Offers(properties).save();
 };
 
-export const removeOffer = (imoId: number) => {
+export const removeOffer = (imoId: string) => {
   return Offers.deleteOne(
     {
       imoId,
@@ -38,7 +38,7 @@ export const removeOffer = (imoId: number) => {
   );
 };
 
-export const alterOffer = (imoId: number, properties: object) => {
+export const alterOffer = (imoId: string, properties: object) => {
   return Offers.updateOne(
     {
       imoId,
@@ -48,7 +48,7 @@ export const alterOffer = (imoId: number, properties: object) => {
   );
 };
 
-export const findOffer = (imoId: number) => {
+export const findOffer = (imoId: string) => {
   return Offers.findOne(
     {
       imoId,
