@@ -11,22 +11,19 @@ import {
   getAllAddedToDbFiles,
   removeOffer,
 } from "./db";
+import { mkDirIfDoesntExist } from "./utility";
+
+export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
+const PACKED_ADVERTS_DIR = "adverts_packed";
 
 export const fetchNewOffers = async () => {
-  const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
-  const PACKED_ADVERTS_DIR = "adverts_packed";
+  await mkDirIfDoesntExist(PACKED_ADVERTS_DIR);
+  await mkDirIfDoesntExist(UNPACKED_ADVERTS_DIR);
 
-  let filesToUnpack: string[] = [];
-  try {
-    filesToUnpack = lodash.difference(
-      await fs.readdir(PACKED_ADVERTS_DIR),
-      await fs.readdir(UNPACKED_ADVERTS_DIR)
-    );
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      throw error;
-    }
-  }
+  let filesToUnpack: string[] = lodash.difference(
+    await fs.readdir(PACKED_ADVERTS_DIR),
+    await fs.readdir(UNPACKED_ADVERTS_DIR)
+  );
 
   for (const packedFile of filesToUnpack) {
     await extract(`${process.cwd()}/${PACKED_ADVERTS_DIR}/${packedFile}`, {

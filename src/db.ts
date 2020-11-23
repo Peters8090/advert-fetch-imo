@@ -56,6 +56,10 @@ export const dropAllOffers = () => {
   return Offers.deleteMany({}, () => {});
 };
 
+export const dropAllAddedToDbFiles = () => {
+  return AddedToDbFiles.deleteMany({}, () => {});
+};
+
 export const getAllOffers = () => {
   return new Promise((resolve) => {
     Offers.find((_, res) => {

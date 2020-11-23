@@ -1,11 +1,21 @@
 import { important_data } from "./important_data";
-import { dbInit, getAllOffers } from "./db";
+import {
+  dbInit,
+  dropAllAddedToDbFiles,
+  dropAllOffers,
+  getAllOffers,
+} from "./db";
 import http from "http";
-import { fetchNewOffers } from "./fetchNewOffers";
+import { fetchNewOffers, UNPACKED_ADVERTS_DIR } from "./fetchNewOffers";
 import { scheduleJob } from "node-schedule";
+import { resetEveryting } from "./resetEverything";
 
 (async () => {
   await dbInit();
+
+  if (important_data.isTest) {
+    await resetEveryting();
+  }
 
   const cronCallback = async () => {
     await fetchNewOffers();
