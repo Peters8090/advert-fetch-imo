@@ -38,14 +38,9 @@ export const removeOffer = (imoId: string) => {
   );
 };
 
-export const alterOffer = (imoId: string, properties: object) => {
-  return Offers.updateOne(
-    {
-      imoId,
-    },
-    properties,
-    () => {}
-  );
+export const updateOffer = async (imoId: string, properties: object) => {
+  await removeOffer(imoId);
+  await addOffer(properties);
 };
 
 export const findOffer = (imoId: string) => {

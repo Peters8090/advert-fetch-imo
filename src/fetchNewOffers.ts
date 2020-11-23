@@ -2,12 +2,10 @@ import extract from "extract-zip";
 import fs from "promise-fs";
 import lodash from "lodash";
 import { xml2js } from "xml-js";
-import ncp from "copy-paste";
-import http from "http";
 import {
   addAddedToDbFile,
   addOffer,
-  alterOffer,
+  updateOffer,
   dropAllOffers,
   findOffer,
   getAllAddedToDbFiles,
@@ -143,7 +141,7 @@ export const fetchNewOffers = async () => {
 
           const foundOffer = id ? await findOffer(id!) : null;
           if (foundOffer) {
-            await alterOffer(id!, newOffer);
+            await updateOffer(id!, newOffer);
           } else {
             await addOffer(newOffer);
           }
