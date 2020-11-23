@@ -1,4 +1,4 @@
-import { dbInit, getAllAddedToDbFiles, getAllOffers } from "./db";
+import { dbInit, getAllOffers } from "./db";
 import http from "http";
 import { fetchNewOffers } from "./fetchNewOffers";
 
