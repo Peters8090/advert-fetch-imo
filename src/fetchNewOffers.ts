@@ -15,6 +15,8 @@ import { mkDirIfDoesntExist } from "./utility";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";
+const PHOTOS_DIR = "photos";
+const OFFERS_XML_FILENAME = "oferty.xml";
 
 export const fetchNewOffers = async () => {
   await mkDirIfDoesntExist(PACKED_ADVERTS_DIR);
@@ -42,8 +44,6 @@ export const fetchNewOffers = async () => {
   );
 
   unpackedFilesNotAddedToDb.sort();
-
-  const OFFERS_XML_FILENAME = "oferty.xml";
 
   type Element = {
     name?: string;
