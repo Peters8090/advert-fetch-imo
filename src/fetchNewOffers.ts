@@ -73,8 +73,6 @@ export const fetchNewOffers = async () => {
     })
   );
 
-  console.log(offerFileContentsNotAddedToDb);
-
   for (const [fileName, xmlContent] of offerFileContentsNotAddedToDb) {
     const header = xmlContent.find(({ name }) => name === "header");
     const lista_ofert = xmlContent.find(({ name }) => name === "lista_ofert");
