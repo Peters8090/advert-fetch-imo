@@ -38,26 +38,25 @@ import { identity } from "lodash";
 
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
-    res.writeHead(200);
 
     const filterList: {
       fieldName: string;
       isAllowed: (value: string) => any;
     }[] = [
       {
-        fieldName: "transaction_type",
+        fieldName: "property_type",
         isAllowed: (value: string) =>
           ["mieszkania", "domy", "dzialki", "lokale"].find((v) => v === value),
       },
       {
-        fieldName: "property_type",
+        fieldName: "transaction_type",
         isAllowed: (value: string) =>
           ["sprzedaz", "wynajem"].find((v) => v === value),
       },
       {
         fieldName: "price",
         isAllowed: (value: string) => {
-          const res = /\[([0-9]+)-([0-9]+)]/.exec(value);
+          const res = /^\[([0-9]+)-([0-9]+)]$/.exec(value);
           if (!res) {
             return;
           }
@@ -71,23 +70,31 @@ import { identity } from "lodash";
       },
     ];
 
-    const chosenFilters: Record<string, any> = {};
+    let chosenFilters: Record<string, any> = {};
 
+    let error = false;
     for (const [name, value] of Object.entries(req.query)) {
       const foundFilter = filterList.find((f) => f.fieldName === name);
       if (foundFilter) {
         const res = foundFilter.isAllowed(`${value}`);
         if (res) {
           chosenFilters[name] = res;
+        } else {
+          error = true;
         }
+      } else {
+        error = true;
       }
     }
 
-    const offers = (await getAllOffers(
-      Object.keys(chosenFilters).length ? chosenFilters : undefined
-    )) as any[];
-
-    res.end(JSON.stringify(offers));
+    if (error) {
+      res.writeHead(400);
+      res.end(JSON.stringify([]));
+    } else {
+      const offers = await getAllOffers();
+      res.writeHead(200);
+      res.end(JSON.stringify(offers));
+    }
   });
   app.listen(8080);
   console.log("Server is ready");

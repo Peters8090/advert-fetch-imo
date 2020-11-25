@@ -83,8 +83,8 @@ export const fetchNewOffers = async () => {
     }
 
     for (const dzial of lista_ofert?.elements!) {
-      const transactionType = dzial?.attributes?.tab;
-      const propertyType = dzial?.attributes?.typ;
+      const propertyType = dzial?.attributes?.tab;
+      const transactionType = dzial?.attributes?.typ;
 
       if (dzial?.elements) {
         for (const oferta of dzial!.elements!) {
@@ -129,8 +129,8 @@ export const fetchNewOffers = async () => {
             price,
             location,
             ...Object.fromEntries(params!),
-            transaction_type: transactionType,
             property_type: propertyType,
+            transaction_type: transactionType,
           };
 
           const foundOffer = id ? await findOffer(id!) : null;
