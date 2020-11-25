@@ -83,10 +83,8 @@ export const fetchNewOffers = async () => {
     }
 
     for (const dzial of lista_ofert?.elements!) {
-      const dzialAttributes = dzial.attributes as {
-        tab: string;
-        typ: string;
-      };
+      const transactionType = dzial?.attributes?.tab;
+      const propertyType = dzial?.attributes?.typ;
 
       if (dzial?.elements) {
         for (const oferta of dzial!.elements!) {
@@ -101,10 +99,9 @@ export const fetchNewOffers = async () => {
           const cenaEntry = oferta.elements?.find(
             ({ name }) => name === "cena"
           );
-          const cena = {
-            waluta: cenaEntry?.attributes?.waluta,
-            value: cenaEntry?.elements?.[0].text,
-          };
+
+          const currency = cenaEntry?.attributes?.waluta;
+          const price = cenaEntry?.elements?.[0].text;
 
           const location = oferta?.elements
             ?.find(({ name }) => name === "location")
@@ -128,10 +125,12 @@ export const fetchNewOffers = async () => {
 
           const newOffer = {
             imoId: id,
-            cena,
+            currency,
+            price,
             location,
             ...Object.fromEntries(params!),
-            dzial: dzialAttributes,
+            transaction_type: transactionType,
+            property_type: propertyType,
           };
 
           const foundOffer = id ? await findOffer(id!) : null;

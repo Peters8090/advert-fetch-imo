@@ -60,10 +60,16 @@ export const dropAllAddedToDbFiles = () => {
   return AddedToDbFiles.deleteMany({}, () => {});
 };
 
-export const getAllOffers = () => {
+export const getAllOffers = (conditions?: Record<string, any>) => {
   return new Promise((resolve) => {
-    Offers.find((_, res) => {
-      resolve(res);
-    });
+    if (conditions) {
+      Offers.find(conditions, (_, res) => {
+        resolve(res);
+      });
+    } else {
+      Offers.find((_, res) => {
+        resolve(res);
+      });
+    }
   });
 };
