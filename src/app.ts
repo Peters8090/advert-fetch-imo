@@ -12,6 +12,7 @@ import { resetEveryting } from "./resetEverything";
 import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
+import { identity } from "lodash";
 
 (async () => {
   await dbInit();
@@ -39,20 +40,52 @@ import bodyParser from "body-parser";
     res.setHeader("Content-Type", "application/json");
     res.writeHead(200);
 
-    const filterList = [
+    const filterList: {
+      fieldName: string;
+      isAllowed: (value: string) => any;
+    }[] = [
       {
         fieldName: "transaction_type",
-        allowedValues: ["mieszkania", "domy", "dzialki", "lokale"],
+        isAllowed: (value: string) =>
+          ["mieszkania", "domy", "dzialki", "lokale"].find((v) => v === value),
       },
       {
         fieldName: "property_type",
-        allowedValues: ["sprzedaz", "wynajem"],
+        isAllowed: (value: string) =>
+          ["sprzedaz", "wynajem"].find((v) => v === value),
+      },
+      {
+        fieldName: "price",
+        isAllowed: (value: string) => {
+          const res = /\[([0-9]+)-([0-9]+)]/.exec(value);
+          if (!res) {
+            return;
+          }
+          const [min, max] = [...res].slice(1).map((el) => +el);
+
+          return {
+            $gte: min,
+            $lte: max,
+          };
+        },
       },
     ];
 
-    const chosenFilters = {};
+    const chosenFilters: Record<string, any> = {};
 
-    const offers = (await getAllOffers()) as any[];
+    for (const [name, value] of Object.entries(req.query)) {
+      const foundFilter = filterList.find((f) => f.fieldName === name);
+      if (foundFilter) {
+        const res = foundFilter.isAllowed(`${value}`);
+        if (res) {
+          chosenFilters[name] = res;
+        }
+      }
+    }
+
+    const offers = (await getAllOffers(
+      Object.keys(chosenFilters).length ? chosenFilters : undefined
+    )) as any[];
 
     res.end(JSON.stringify(offers));
   });
