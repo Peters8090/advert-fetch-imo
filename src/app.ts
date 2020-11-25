@@ -9,6 +9,7 @@ import http from "http";
 import { fetchNewOffers, UNPACKED_ADVERTS_DIR } from "./fetchNewOffers";
 import { scheduleJob } from "node-schedule";
 import { resetEveryting } from "./resetEverything";
+import express from "express";
 
 (async () => {
   await dbInit();
@@ -25,13 +26,14 @@ import { resetEveryting } from "./resetEverything";
   await cronCallback();
 
   scheduleJob(important_data.cronSchedule, cronCallback);
+  const app = express();
 
-  const server = http.createServer(async (req, res) => {
+  app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.writeHead(200);
     const offers = (await getAllOffers()) as any[];
     res.end(JSON.stringify(offers));
   });
-  server.listen(8080);
+  app.listen(8080);
   console.log("Server is ready");
 })();
