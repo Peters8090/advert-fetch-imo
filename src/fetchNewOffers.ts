@@ -101,7 +101,7 @@ export const fetchNewOffers = async () => {
           );
 
           const currency = cenaEntry?.attributes?.waluta;
-          const price = cenaEntry?.elements?.[0].text;
+          const price = +cenaEntry?.elements?.[0].text?.replace(",", ".")!;
 
           const location = oferta?.elements
             ?.find(({ name }) => name === "location")

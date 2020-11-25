@@ -38,9 +38,21 @@ import bodyParser from "body-parser";
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.writeHead(200);
-    const offers = (await getAllOffers({
-      imoId: "11",
-    })) as any[];
+
+    const filterList = [
+      {
+        fieldName: "transaction_type",
+        allowedValues: ["mieszkania", "domy", "dzialki", "lokale"],
+      },
+      {
+        fieldName: "property_type",
+        allowedValues: ["sprzedaz", "wynajem"],
+      },
+    ];
+
+    const chosenFilters = {};
+
+    const offers = (await getAllOffers()) as any[];
 
     res.end(JSON.stringify(offers));
   });
