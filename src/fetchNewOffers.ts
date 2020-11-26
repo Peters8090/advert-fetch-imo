@@ -18,7 +18,7 @@ import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";
-export const PHOTOS_DIR = "photos";
+export const PHOTOS_DIR = "public/photos";
 const OFFERS_XML_FILENAME = "oferty.xml";
 
 export const fetchNewOffers = async () => {
@@ -174,7 +174,9 @@ export const fetchNewOffers = async () => {
 
           const photosWithLinks = photosWithNames.map(
             (el) =>
-              `${important_data.serverAddress}:${important_data.port}/photos/${el}`
+              `${important_data.serverAddress}:${
+                important_data.port
+              }/${PHOTOS_DIR.replace("public/", "")}/${el}`
           );
 
           const newOfferDraft = {

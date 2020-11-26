@@ -39,6 +39,8 @@ import { sanitizeString } from "./utility";
   app.use(mongoSanitize());
   app.use(require("content-filter")());
 
+  app.use(express.static("public"));
+
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
 
