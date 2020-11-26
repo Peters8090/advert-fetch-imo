@@ -91,7 +91,7 @@ import { identity } from "lodash";
       res.writeHead(400);
       res.end(JSON.stringify([]));
     } else {
-      const offers = await getAllOffers();
+      const offers = await getAllOffers(chosenFilters);
       res.writeHead(200);
       res.end(JSON.stringify(offers));
     }
