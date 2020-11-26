@@ -1,3 +1,4 @@
+import { important_data } from "./important_data";
 import extract from "extract-zip";
 import fs from "promise-fs";
 import lodash from "lodash";
@@ -150,6 +151,15 @@ export const fetchNewOffers = async () => {
             );
           })();
 
+          const photosWithNames = params
+            ?.filter(([key]) => key?.match(/^zdjecie[0-9]+$/))
+            .reduce((acc, cur) => [...acc, cur[1]], [])!;
+
+          const photosWithLinks = photosWithNames.map(
+            (el) =>
+              `${important_data.serverAddress}:${important_data.port}/photos/${el}`
+          );
+
           const newOfferDraft = {
             imoId: id,
             currency,
@@ -157,6 +167,7 @@ export const fetchNewOffers = async () => {
             location,
             advertisement_text: generatedTitle,
             ...Object.fromEntries(params!),
+            photos: photosWithLinks,
             property_type: propertyType,
             transaction_type: transactionType,
           } as Record<string, any>;
@@ -169,15 +180,18 @@ export const fetchNewOffers = async () => {
             Object.entries(newOfferDraft).map(([key, el]) => {
               let newEl = el;
               if (el) {
-                if (+el) {
-                  newEl = +el;
-                } else if (+el.replace(",", ".")) {
-                  newEl = +el.replace(",", ".");
-                }
-                if (el === "true") {
-                  newEl = "tak";
-                } else if (el === "false") {
-                  newEl = "nie";
+                if (typeof el === "string") {
+                  if (+el) {
+                    newEl = +el;
+                  } else if (+el.replace(",", ".")) {
+                    newEl = +el.replace(",", ".");
+                  }
+
+                  if (el === "true") {
+                    newEl = "tak";
+                  } else if (el === "false") {
+                    newEl = "nie";
+                  }
                 }
               }
               return [key, newEl];

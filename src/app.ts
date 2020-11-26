@@ -143,7 +143,7 @@ import { sanitizeString } from "./utility";
       );
     }
   });
-  app.listen(8080);
+  app.listen(important_data.port);
 
   console.log("Server is ready");
 })();

@@ -95,4 +95,5 @@ export const propertiesMappings: Record<string, string> = {
   datawprowadzenia: "Data wprowadzenia",
   osiedlezamkniete: "Osiedle zamknięte",
   slug: "slug",
+  photos: "photos",
 };
