@@ -1,3 +1,4 @@
+import rmfr from "rmfr";
 import { important_data } from "./important_data";
 import extract from "extract-zip";
 import fs from "promise-fs";
@@ -17,12 +18,13 @@ import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";
-const PHOTOS_DIR = "photos";
+export const PHOTOS_DIR = "photos";
 const OFFERS_XML_FILENAME = "oferty.xml";
 
 export const fetchNewOffers = async () => {
   await mkDirIfDoesntExist(PACKED_ADVERTS_DIR);
   await mkDirIfDoesntExist(UNPACKED_ADVERTS_DIR);
+  await mkDirIfDoesntExist(PHOTOS_DIR);
 
   let filesToUnpack: string[] = lodash.difference(
     await fs.readdir(PACKED_ADVERTS_DIR),
@@ -64,6 +66,21 @@ export const fetchNewOffers = async () => {
           `${UNPACKED_ADVERTS_DIR}/${file}/${OFFERS_XML_FILENAME}`
         )
       ).toString();
+
+      const photoFiles = (
+        await fs.readdir(`${UNPACKED_ADVERTS_DIR}/${file}`)
+      ).filter((el) => el !== OFFERS_XML_FILENAME);
+
+      for (const photoFile of photoFiles) {
+        try {
+          await fs.copyFile(
+            `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
+            `${PHOTOS_DIR}/${photoFile}`
+          );
+        } catch (e) {
+          console.log(`failed to copy file ${photoFile}`);
+        }
+      }
 
       return [file, xml2js(xmlContent).elements[0].elements] as [
         string,
