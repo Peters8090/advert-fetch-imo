@@ -103,14 +103,15 @@ export const fetchNewOffers = async () => {
           const currency = cenaEntry?.attributes?.waluta;
           const price = +cenaEntry?.elements?.[0].text?.replace(",", ".")!;
 
-          const location = [
+          const locationProperties = [
             ...new Set(
               oferta?.elements
                 ?.find(({ name }) => name === "location")
                 ?.elements?.map((el) => el.elements?.[0].text)
                 .reverse()
             ),
-          ].join(", ");
+          ];
+          const location = locationProperties.join(", ");
 
           const params = oferta.elements
             ?.filter((el) => el.name === "param")
@@ -124,6 +125,30 @@ export const fetchNewOffers = async () => {
             .filter(
               ([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key)
             );
+
+          const generatedTitle = (() => {
+            const singularPropertyType = (() => {
+              switch (propertyType) {
+                case "mieszkania":
+                  return "mieszkanie";
+                case "domy":
+                  return "dom";
+                case "dzialki":
+                  return "działka";
+                case "lokale":
+                  return "lokal";
+              }
+            })();
+            const area = params?.find(([key]) => key === "powierzchnia")?.[1];
+            const city = locationProperties[0];
+
+            const capitalizeFirstLetter = (text: string) =>
+              text.charAt(0).toUpperCase() + text.slice(1);
+
+            return capitalizeFirstLetter(
+              [singularPropertyType, area + " m²", city].join(", ")
+            );
+          })();
 
           const newOffer = Object.fromEntries(
             Object.entries({
@@ -151,6 +176,10 @@ export const fetchNewOffers = async () => {
               return [key, newEl];
             })
           );
+
+          if (!newOffer.advertisement_text) {
+            newOffer.advertisement_text = generatedTitle;
+          }
 
           const foundOffer = id ? await findOffer(id!) : null;
           if (foundOffer) {
