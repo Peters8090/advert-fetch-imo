@@ -1,8 +1,6 @@
 export const propertiesMappings: Record<string, string> = {
-  wojewodztwo: "Województwo",
-  miasto: "Miasto",
-  dzielnica: "Dzielnica",
-  zip_code: "Kod pocztowy",
+  imoId: "id",
+  advertisement_text: "title",
   rynek_pierwotny: "Rynek pierwotny",
   powierzchnia: "Powierzchnia",
   liczbapokoi: "Liczba pokoi",
@@ -65,7 +63,6 @@ export const propertiesMappings: Record<string, string> = {
   ogrodek_powierzchnia: "Powierzchnia ogródka",
   liczba_miejsc_parkingowych: "Liczba miejsc parkingowych",
   typbudynkumieszk: "Typ budynku mieszkalnego",
-  advertisement_text: "advertisement_text",
   wirtualnawizyta: "Wirtualna wizyta",
   has_garden: "Ogród",
   powierzchniadzialki: "Powierzchnia działki",
@@ -95,7 +92,6 @@ export const propertiesMappings: Record<string, string> = {
   location: "Lokalizacja",
   price: "Cena",
   currency: "Waluta",
-  imoId: "id",
   datawprowadzenia: "Data wprowadzenia",
   osiedlezamkniete: "Osiedle zamknięte",
 };

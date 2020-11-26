@@ -100,13 +100,7 @@ import { propertiesMappings } from "./propertiesMappings";
           offers.map((el) =>
             Object.fromEntries(
               Object.entries(el.toObject())
-                .filter(([key]) => {
-                  if (!propertiesMappings[key]) {
-                    console.log(key);
-                  }
-
-                  return propertiesMappings[key];
-                })
+                .filter(([key]) => propertiesMappings[key])
                 .map(([key, value]) => {
                   if (!propertiesMappings[key]) console.log(key);
 

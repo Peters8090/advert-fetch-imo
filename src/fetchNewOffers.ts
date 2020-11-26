@@ -103,12 +103,14 @@ export const fetchNewOffers = async () => {
           const currency = cenaEntry?.attributes?.waluta;
           const price = +cenaEntry?.elements?.[0].text?.replace(",", ".")!;
 
-          const location = oferta?.elements
-            ?.find(({ name }) => name === "location")
-            ?.elements?.map((el) => el.elements?.[0].text)
-            .reverse()
-            .filter((_, i) => i !== 1)
-            .join(", ");
+          const location = [
+            ...new Set(
+              oferta?.elements
+                ?.find(({ name }) => name === "location")
+                ?.elements?.map((el) => el.elements?.[0].text)
+                .reverse()
+            ),
+          ].join(", ");
 
           const params = oferta.elements
             ?.filter((el) => el.name === "param")
@@ -123,15 +125,32 @@ export const fetchNewOffers = async () => {
               ([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key)
             );
 
-          const newOffer = {
-            imoId: id,
-            currency,
-            price,
-            location,
-            ...Object.fromEntries(params!),
-            property_type: propertyType,
-            transaction_type: transactionType,
-          };
+          const newOffer = Object.fromEntries(
+            Object.entries({
+              imoId: id,
+              currency,
+              price,
+              location,
+              ...Object.fromEntries(params!),
+              property_type: propertyType,
+              transaction_type: transactionType,
+            } as Record<string, any>).map(([key, el]) => {
+              let newEl = el;
+              if (el) {
+                if (+el) {
+                  newEl = +el;
+                } else if (+el.replace(",", ".")) {
+                  newEl = +el.replace(",", ".");
+                }
+                if (el === "true") {
+                  newEl = "tak";
+                } else if (el === "false") {
+                  newEl = "nie";
+                }
+              }
+              return [key, newEl];
+            })
+          );
 
           const foundOffer = id ? await findOffer(id!) : null;
           if (foundOffer) {
