@@ -99,10 +99,19 @@ import { propertiesMappings } from "./propertiesMappings";
         JSON.stringify(
           offers.map((el) =>
             Object.fromEntries(
-              Object.entries(el.toObject()).map(([key, value]) => [
-                propertiesMappings[key] ?? key,
-                value,
-              ])
+              Object.entries(el.toObject())
+                .filter(([key]) => {
+                  if (!propertiesMappings[key]) {
+                    console.log(key);
+                  }
+
+                  return propertiesMappings[key];
+                })
+                .map(([key, value]) => {
+                  if (!propertiesMappings[key]) console.log(key);
+
+                  return [propertiesMappings[key] ?? key, value];
+                })
             )
           )
         )

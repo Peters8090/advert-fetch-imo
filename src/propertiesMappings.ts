@@ -120,4 +120,7 @@ export const propertiesMappings: Record<string, string> = {
   location: "Lokalizacja",
   price: "Cena",
   currency: "Waluta",
+  imoId: "id",
+  datawprowadzenia: "Data wprowadzenia",
+  osiedlezamkniete: "Osiedle zamknięte",
 };
