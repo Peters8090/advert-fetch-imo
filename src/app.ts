@@ -14,6 +14,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
 import { identity } from "lodash";
 import { propertiesMappings } from "./propertiesMappings";
+import { sanitizeString } from "./utility";
 
 (async () => {
   await dbInit();
@@ -36,6 +37,7 @@ import { propertiesMappings } from "./propertiesMappings";
   app.use(bodyParser.json());
 
   app.use(mongoSanitize());
+  app.use(require("content-filter")());
 
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
@@ -55,6 +57,9 @@ import { propertiesMappings } from "./propertiesMappings";
           $lte: max,
         };
       },
+      search: () => (value: string) => ({
+        $regex: ".*" + sanitizeString(value) + ".*",
+      }),
     };
 
     const filterList: {
@@ -86,6 +91,14 @@ import { propertiesMappings } from "./propertiesMappings";
       {
         fieldName: "liczbapokoi",
         isAllowed: isAllowedValidators.isRange(),
+      },
+      {
+        fieldName: "location",
+        isAllowed: isAllowedValidators.search(),
+      },
+      {
+        fieldName: "advertisement_text",
+        isAllowed: isAllowedValidators.search(),
       },
     ];
 
@@ -131,5 +144,6 @@ import { propertiesMappings } from "./propertiesMappings";
     }
   });
   app.listen(8080);
+
   console.log("Server is ready");
 })();
