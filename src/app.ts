@@ -13,6 +13,7 @@ import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
 import { identity } from "lodash";
+import { propertiesMappings } from "./propertiesMappings";
 
 (async () => {
   await dbInit();
@@ -91,9 +92,21 @@ import { identity } from "lodash";
       res.writeHead(400);
       res.end(JSON.stringify([]));
     } else {
-      const offers = await getAllOffers(chosenFilters);
+      const offers = (await getAllOffers(chosenFilters)) as any[];
       res.writeHead(200);
-      res.end(JSON.stringify(offers));
+
+      res.end(
+        JSON.stringify(
+          offers.map((el) =>
+            Object.fromEntries(
+              Object.entries(el.toObject()).map(([key, value]) => [
+                propertiesMappings[key] ?? key,
+                value,
+              ])
+            )
+          )
+        )
+      );
     }
   });
   app.listen(8080);
