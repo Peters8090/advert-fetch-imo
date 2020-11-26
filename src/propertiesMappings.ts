@@ -94,4 +94,5 @@ export const propertiesMappings: Record<string, string> = {
   currency: "Waluta",
   datawprowadzenia: "Data wprowadzenia",
   osiedlezamkniete: "Osiedle zamknięte",
+  slug: "slug",
 };

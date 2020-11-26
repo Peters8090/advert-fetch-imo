@@ -11,7 +11,8 @@ import {
   getAllAddedToDbFiles,
   removeOffer,
 } from "./db";
-import { mkDirIfDoesntExist } from "./utility";
+import { encodeToBase64, mkDirIfDoesntExist } from "./utility";
+import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";
@@ -122,9 +123,8 @@ export const fetchNewOffers = async () => {
                 ? param.elements?.map((el) => el.elements?.[0].text).join("\n")
                 : param.elements?.[0].text,
             ])
-            .filter(
-              ([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key)
-            );
+            .filter(([key]) => !["n_geo_x", "n_geo_y"].some((el) => el === key))
+            .filter(([_, value]) => value !== undefined);
 
           const generatedTitle = (() => {
             const singularPropertyType = (() => {
@@ -150,16 +150,23 @@ export const fetchNewOffers = async () => {
             );
           })();
 
-          const newOffer = Object.fromEntries(
-            Object.entries({
-              imoId: id,
-              currency,
-              price,
-              location,
-              ...Object.fromEntries(params!),
-              property_type: propertyType,
-              transaction_type: transactionType,
-            } as Record<string, any>).map(([key, el]) => {
+          const newOfferDraft = {
+            imoId: id,
+            currency,
+            price,
+            location,
+            advertisement_text: generatedTitle,
+            ...Object.fromEntries(params!),
+            property_type: propertyType,
+            transaction_type: transactionType,
+          } as Record<string, any>;
+
+          newOfferDraft.slug =
+            slugify(newOfferDraft.advertisement_text) +
+            `-${encodeToBase64(newOfferDraft.imoId)}`;
+
+          const newOfferFinal = Object.fromEntries(
+            Object.entries(newOfferDraft).map(([key, el]) => {
               let newEl = el;
               if (el) {
                 if (+el) {
@@ -177,15 +184,11 @@ export const fetchNewOffers = async () => {
             })
           );
 
-          if (!newOffer.advertisement_text) {
-            newOffer.advertisement_text = generatedTitle;
-          }
-
           const foundOffer = id ? await findOffer(id!) : null;
           if (foundOffer) {
-            await updateOffer(id!, newOffer);
+            await updateOffer(id!, newOfferFinal);
           } else {
-            await addOffer(newOffer);
+            await addOffer(newOfferFinal);
           }
         }
       }

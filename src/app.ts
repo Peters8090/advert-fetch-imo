@@ -40,6 +40,23 @@ import { propertiesMappings } from "./propertiesMappings";
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
 
+    const isAllowedValidators = {
+      inList: (list: string[]) => (value: string) =>
+        list.find((v) => v === value),
+      isRange: () => (value: string) => {
+        const res = /^\[([0-9]+)-([0-9]+)]$/.exec(value);
+        if (!res) {
+          return;
+        }
+        const [min, max] = [...res].slice(1).map((el) => +el);
+
+        return {
+          $gte: min,
+          $lte: max,
+        };
+      },
+    };
+
     const filterList: {
       fieldName: string;
       isAllowed: (value: string) => any;
@@ -47,27 +64,28 @@ import { propertiesMappings } from "./propertiesMappings";
       {
         fieldName: "property_type",
         isAllowed: (value: string) =>
-          ["mieszkania", "domy", "dzialki", "lokale"].find((v) => v === value),
+          isAllowedValidators.inList([
+            "mieszkania",
+            "domy",
+            "dzialki",
+            "lokale",
+          ]),
       },
       {
         fieldName: "transaction_type",
-        isAllowed: (value: string) =>
-          ["sprzedaz", "wynajem"].find((v) => v === value),
+        isAllowed: isAllowedValidators.inList(["sprzedaz", "wynajem"]),
       },
       {
         fieldName: "price",
-        isAllowed: (value: string) => {
-          const res = /^\[([0-9]+)-([0-9]+)]$/.exec(value);
-          if (!res) {
-            return;
-          }
-          const [min, max] = [...res].slice(1).map((el) => +el);
-
-          return {
-            $gte: min,
-            $lte: max,
-          };
-        },
+        isAllowed: isAllowedValidators.isRange(),
+      },
+      {
+        fieldName: "powierzchnia",
+        isAllowed: isAllowedValidators.isRange(),
+      },
+      {
+        fieldName: "liczbapokoi",
+        isAllowed: isAllowedValidators.isRange(),
       },
     ];
 

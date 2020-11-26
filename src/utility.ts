@@ -12,3 +12,6 @@ export const mkDirIfDoesntExist = async (fileName: string) => {
     }
   }
 };
+
+export const encodeToBase64 = (s: string): string =>
+  Buffer.from(s).toString("base64");
