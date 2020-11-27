@@ -14,6 +14,19 @@ export const mkDirIfDoesntExist = async (fileName: string) => {
   }
 };
 
+export const doesFileExist = async (fileName: string) => {
+  try {
+    await fs.stat(fileName);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return false;
+    } else {
+      throw error;
+    }
+  }
+};
+
 export const encodeToBase64 = (s: string): string =>
   Buffer.from(s).toString("base64");
 

@@ -13,7 +13,7 @@ import {
   getAllAddedToDbFiles,
   removeOffer,
 } from "./db";
-import { encodeToBase64, mkDirIfDoesntExist } from "./utility";
+import { doesFileExist, encodeToBase64, mkDirIfDoesntExist } from "./utility";
 import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
@@ -73,12 +73,38 @@ export const fetchNewOffers = async () => {
 
       for (const photoFile of photoFiles) {
         try {
+          const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+            new RegExp(
+              `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
+            );
+
+          const [offerId, photoNr] = photoFile
+            .match(getPhotoFileNameRegex())!
+            .slice(1);
+
+          const desiredLocation = `${PHOTOS_DIR}/${photoFile}`;
+
+          if (photoNr === "1") {
+            const filesToDelete = (await fs.readdir(PHOTOS_DIR)).filter((p) =>
+              p.match(getPhotoFileNameRegex(offerId))
+            );
+            for (const fileToDelete of filesToDelete) {
+              if (await doesFileExist(`${PHOTOS_DIR}/${fileToDelete}`)) {
+                await fs.unlink(`${PHOTOS_DIR}/${fileToDelete}`);
+              }
+            }
+          }
+
+          if (await doesFileExist(desiredLocation)) {
+            await fs.unlink(desiredLocation);
+          }
+
           await fs.copyFile(
             `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
-            `${PHOTOS_DIR}/${photoFile}`
+            desiredLocation
           );
         } catch (e) {
-          console.log(`failed to copy file ${photoFile}`);
+          // console.log(`failed to copy file ${photoFile}`);
         }
       }
 

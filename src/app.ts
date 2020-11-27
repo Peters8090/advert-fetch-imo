@@ -13,9 +13,10 @@ import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
 import { propertiesMappings } from "./propertiesMappings";
-import { sanitizeString } from "./utility";
+import { doesFileExist, sanitizeString } from "./utility";
 import cors from "cors";
 import lodash from "lodash";
+import fs from "promise-fs";
 
 (async () => {
   await dbInit();
@@ -160,4 +161,45 @@ import lodash from "lodash";
   app.listen(important_data.port);
 
   console.log("Server is ready");
+
+  const asyncEvery = async <T>(
+    arr: T[],
+    predicate: (x: T) => Promise<boolean>
+  ): Promise<boolean> => {
+    for (let e of arr) {
+      if (!(await predicate(e))) return false;
+    }
+    return true;
+  };
+
+  const asyncFilter = async <T>(
+    arr: T[],
+    predicate: (x: T) => Promise<boolean>
+  ): Promise<T[]> => {
+    const results = await Promise.all(arr.map(predicate));
+
+    return arr.filter((_v, index) => results[index]);
+  };
+
+  const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+    new RegExp(
+      `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
+    );
+
+  const offerss = ((await getAllOffers()) as any).docs as any[];
+
+  console.log(
+    await asyncEvery(offerss, async (el) => {
+      const photosInFolder = await asyncFilter(
+        await fs.readdir("public/photos"),
+        async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
+      );
+
+      if (photosInFolder.length !== el.photos.length) {
+        console.log(photosInFolder.length, el.photos.length);
+      }
+
+      return photosInFolder.length === el.photos.length;
+    })
+  );
 })();
