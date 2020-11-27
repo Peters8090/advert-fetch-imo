@@ -108,10 +108,10 @@ export const fetchNewOffers = async () => {
       if (dzial?.elements) {
         for (const oferta of dzial!.elements!) {
           const id = oferta.elements?.find(({ name }) => name === "id")
-            ?.elements?.[0].text;
+            ?.elements?.[0].text!;
 
           if (oferta.name === "oferta_usun") {
-            await removeOffer(id!);
+            await removeOffer(id);
             break;
           }
 
@@ -200,16 +200,13 @@ export const fetchNewOffers = async () => {
               let newEl = el;
               if (el) {
                 if (typeof el === "string") {
-                  if (+el) {
-                    newEl = +el;
-                  } else if (+el.replace(",", ".")) {
-                    newEl = +el.replace(",", ".");
-                  }
-
                   if (el === "true") {
                     newEl = "tak";
                   } else if (el === "false") {
                     newEl = "nie";
+                  }
+                  if (["powierzchnia", "liczbapokoi", "price"].includes(key)) {
+                    newEl = +el.replace(",", ".");
                   }
                 }
               }
@@ -217,9 +214,10 @@ export const fetchNewOffers = async () => {
             })
           );
 
-          const foundOffer = id ? await findOffer(id!) : null;
+          const foundOffer = await findOffer(id);
+
           if (foundOffer) {
-            await updateOffer(id!, newOfferFinal);
+            await updateOffer(id, newOfferFinal);
           } else {
             await addOffer(newOfferFinal);
           }

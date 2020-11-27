@@ -30,7 +30,7 @@ export const addOffer = (properties: object) => {
 };
 
 export const removeOffer = (imoId: string) => {
-  return Offers.deleteOne(
+  return Offers.deleteMany(
     {
       imoId,
     },
