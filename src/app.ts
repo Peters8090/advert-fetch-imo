@@ -15,6 +15,7 @@ import bodyParser from "body-parser";
 import { identity } from "lodash";
 import { propertiesMappings } from "./propertiesMappings";
 import { sanitizeString } from "./utility";
+import cors from "cors";
 
 (async () => {
   await dbInit();
@@ -35,10 +36,9 @@ import { sanitizeString } from "./utility";
 
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
-
+  app.use(cors());
   app.use(mongoSanitize());
   app.use(require("content-filter")());
-
   app.use(express.static("public"));
 
   app.get("/", async (req, res) => {
