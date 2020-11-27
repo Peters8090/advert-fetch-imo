@@ -1,7 +1,11 @@
 import { important_data } from "./important_data";
 import mongoose from "mongoose";
 
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
+
 const offersSchema = new mongoose.Schema({}, { strict: false });
+offersSchema.plugin(aggregatePaginate);
+
 const Offers = mongoose.model("offers", offersSchema);
 
 const addedToDbFilesSchema = new mongoose.Schema({ fileName: String });
@@ -61,15 +65,15 @@ export const dropAllAddedToDbFiles = () => {
 };
 
 export const getAllOffers = (conditions?: Record<string, any>) => {
+  const aggregateQuery = Offers.aggregate();
+
   return new Promise((resolve) => {
-    if (conditions) {
-      Offers.find(conditions, (_, res) => {
+    (Offers as any).aggregatePaginate(
+      aggregateQuery,
+      conditions,
+      (_: any, res: any) => {
         resolve(res);
-      });
-    } else {
-      Offers.find((_, res) => {
-        resolve(res);
-      });
-    }
+      }
+    );
   });
 };

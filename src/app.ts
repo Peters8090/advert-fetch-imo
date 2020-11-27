@@ -62,6 +62,7 @@ import cors from "cors";
       search: () => (value: string) => ({
         $regex: ".*" + sanitizeString(value) + ".*",
       }),
+      normal: () => (value: string) => +sanitizeString(value),
     };
 
     const filterList: {
@@ -102,6 +103,14 @@ import cors from "cors";
         fieldName: "advertisement_text",
         isAllowed: isAllowedValidators.search(),
       },
+      {
+        fieldName: "page",
+        isAllowed: isAllowedValidators.normal(),
+      },
+      {
+        fieldName: "limit",
+        isAllowed: isAllowedValidators.normal(),
+      },
     ];
 
     let chosenFilters: Record<string, any> = {};
@@ -125,14 +134,14 @@ import cors from "cors";
       res.writeHead(400);
       res.end(JSON.stringify([]));
     } else {
-      const offers = (await getAllOffers(chosenFilters)) as any[];
+      const offers = ((await getAllOffers(chosenFilters)) as any).docs as any[];
       res.writeHead(200);
 
       res.end(
         JSON.stringify(
           offers.map((el) =>
             Object.fromEntries(
-              Object.entries(el.toObject())
+              Object.entries(el)
                 .filter(([key]) => propertiesMappings[key])
                 .map(([key, value]) => {
                   if (!propertiesMappings[key]) console.log(key);
