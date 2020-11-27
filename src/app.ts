@@ -12,10 +12,10 @@ import { resetEveryting } from "./resetEverything";
 import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
-import { identity } from "lodash";
 import { propertiesMappings } from "./propertiesMappings";
 import { sanitizeString } from "./utility";
 import cors from "cors";
+import lodash from "lodash";
 
 (async () => {
   await dbInit();
@@ -134,24 +134,27 @@ import cors from "cors";
       res.writeHead(400);
       res.end(JSON.stringify([]));
     } else {
-      const offers = ((await getAllOffers(chosenFilters)) as any).docs as any[];
-      res.writeHead(200);
+      const resp = {
+        ...((await getAllOffers(chosenFilters)) as {
+          docs: any[];
+        }),
+      };
 
-      res.end(
-        JSON.stringify(
-          offers.map((el) =>
-            Object.fromEntries(
-              Object.entries(el)
-                .filter(([key]) => propertiesMappings[key])
-                .map(([key, value]) => {
-                  if (!propertiesMappings[key]) console.log(key);
+      resp.docs = resp.docs.map((el) =>
+        Object.fromEntries(
+          Object.entries(el)
+            .filter(([key]) => propertiesMappings[key])
+            .map(([key, value]) => {
+              if (!propertiesMappings[key]) console.log(key);
 
-                  return [propertiesMappings[key] ?? key, value];
-                })
-            )
-          )
+              return [propertiesMappings[key] ?? key, value];
+            })
         )
       );
+
+      res.writeHead(200);
+
+      res.end(JSON.stringify(resp));
     }
   });
   app.listen(important_data.port);
