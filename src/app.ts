@@ -115,6 +115,9 @@ import fs from "promise-fs";
       },
     ];
 
+    const defaultFilters: Record<string, any> = {
+      limit: 10,
+    };
     let chosenFilters: Record<string, any> = {};
 
     let error = false;
@@ -137,7 +140,7 @@ import fs from "promise-fs";
       res.end(JSON.stringify([]));
     } else {
       const resp = {
-        ...((await getAllOffers(chosenFilters)) as {
+        ...((await getAllOffers({ ...defaultFilters, ...chosenFilters })) as {
           docs: any[];
         }),
       };

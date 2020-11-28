@@ -236,28 +236,42 @@ export const fetchNewOffers = async () => {
     await addAddedToDbFile(fileName);
   }
 
-  let offers = ((await getAllOffersWithoutPagination()) as any[]).map(
-    (el: any) => el.toObject()
-  );
-
-  console.log(offers.reduce((acc, cur) => acc + cur.photos.length, 0));
-
   const photoFiles = await fs.readdir(PHOTOS_DIR);
+
   for (const photoFile of photoFiles) {
-    const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
-      new RegExp(
-        `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
-      );
+    let offer = null;
 
-    const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
+    let offersWithPagination: {
+      docs: any[];
+      totalPages: number;
+      page: number;
+    } = (await getAllOffers()) as any;
 
-    const offer = offers.find((of) => {
-      return of.imoId === offerId;
-    });
+    for (let i = 1; i <= offersWithPagination.totalPages; i++) {
+      offersWithPagination = (await getAllOffers({
+        page: i,
+        limit: 20,
+      })) as any;
+
+      const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+        new RegExp(
+          `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
+        );
+
+      const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
+
+      offer = offersWithPagination.docs.find((of) => {
+        return of.imoId === offerId;
+      });
+
+      if (offer) {
+        break;
+      }
+    }
 
     if (
       !offer ||
-      !offer?.photos.find(
+      !offer.photos.find(
         (p: string) => p.substring(p.lastIndexOf("/") + 1) === photoFile
       )
     ) {
