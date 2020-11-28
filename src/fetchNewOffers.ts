@@ -13,6 +13,7 @@ import {
   getAllAddedToDbFiles,
   removeOffer,
   getAllOffers,
+  getAllOffersWithoutPagination,
 } from "./db";
 import { doesFileExist, encodeToBase64, mkDirIfDoesntExist } from "./utility";
 import slugify from "slugify";
@@ -235,7 +236,11 @@ export const fetchNewOffers = async () => {
     await addAddedToDbFile(fileName);
   }
 
-  let offers = ((await getAllOffers()) as any).docs as any[];
+  let offers = ((await getAllOffersWithoutPagination()) as any[]).map(
+    (el: any) => el.toObject()
+  );
+
+  console.log(offers.reduce((acc, cur) => acc + cur.photos.length, 0));
 
   const photoFiles = await fs.readdir(PHOTOS_DIR);
   for (const photoFile of photoFiles) {
@@ -246,7 +251,9 @@ export const fetchNewOffers = async () => {
 
     const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
 
-    const offer = offers.find((of) => of.imoId === offerId);
+    const offer = offers.find((of) => {
+      return of.imoId === offerId;
+    });
 
     if (
       !offer ||

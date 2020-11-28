@@ -4,6 +4,7 @@ import {
   dropAllAddedToDbFiles,
   dropAllOffers,
   getAllOffers,
+  getAllOffersWithoutPagination,
 } from "./db";
 import http from "http";
 import { fetchNewOffers, UNPACKED_ADVERTS_DIR } from "./fetchNewOffers";
@@ -162,16 +163,6 @@ import fs from "promise-fs";
 
   console.log("Server is ready");
 
-  const asyncEvery = async <T>(
-    arr: T[],
-    predicate: (x: T) => Promise<boolean>
-  ): Promise<boolean> => {
-    for (let e of arr) {
-      if (!(await predicate(e))) return false;
-    }
-    return true;
-  };
-
   const asyncFilter = async <T>(
     arr: T[],
     predicate: (x: T) => Promise<boolean>
@@ -186,18 +177,18 @@ import fs from "promise-fs";
       `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
     );
 
-  // const offerss = (await getAllOffers({
-  //   pagination: false,
-  // })) as any[];
+  let offers = ((await getAllOffersWithoutPagination()) as any[]).map(
+    (el: any) => el.toObject()
+  );
 
-  // for (const el of offerss) {
-  //   const photosInFolder = await asyncFilter(
-  //     await fs.readdir("public/photos"),
-  //     async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
-  //   );
+  for (const el of offers) {
+    const photosInFolder = await asyncFilter(
+      await fs.readdir("public/photos"),
+      async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
+    );
 
-  //   // if (photosInFolder.length !== el.photos.length) {
-  //   console.log(photosInFolder.length, el.photos.length);
-  //   // }
-  // }
+    if (photosInFolder.length !== el.photos.length) {
+      console.log(photosInFolder.length, el.photos.length);
+    }
+  }
 })();
