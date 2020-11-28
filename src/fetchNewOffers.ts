@@ -235,46 +235,26 @@ export const fetchNewOffers = async () => {
     await addAddedToDbFile(fileName);
   }
 
-  let offersWithPagination: {
-    docs: any[];
-    totalPages: number;
-    page: number;
-  } = (await getAllOffers()) as any;
+  let offers = ((await getAllOffers()) as any).docs as any[];
 
   const photoFiles = await fs.readdir(PHOTOS_DIR);
-
-  for (let i = 1; i <= offersWithPagination.totalPages; i++) {
-    for (const photoFile of photoFiles) {
-      const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
-        new RegExp(
-          `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
-        );
-
-      const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
-
-      const offer = offersWithPagination.docs.find(
-        (of) => of.imoId === offerId
+  for (const photoFile of photoFiles) {
+    const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+      new RegExp(
+        `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
       );
 
-      if (
-        !offer ||
-        !offer?.photos.find(
-          (p: string) => p.substring(p.lastIndexOf("/") + 1) === photoFile
-        )
-      ) {
-        if (doesFileExist(`${PHOTOS_DIR}/${photoFile}`)) {
-          console.log("a");
+    const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
 
-          await fs.unlink(`${PHOTOS_DIR}/${photoFile}`);
-          console.log("b");
-        }
-      }
-    }
+    const offer = offers.find((of) => of.imoId === offerId);
 
-    if (i !== 1) {
-      offersWithPagination = (await getAllOffers({
-        page: i,
-      })) as any;
+    if (
+      !offer ||
+      !offer?.photos.find(
+        (p: string) => p.substring(p.lastIndexOf("/") + 1) === photoFile
+      )
+    ) {
+      await fs.unlink(`${PHOTOS_DIR}/${photoFile}`);
     }
   }
 };
