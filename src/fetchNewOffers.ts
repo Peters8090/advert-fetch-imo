@@ -12,6 +12,7 @@ import {
   findOffer,
   getAllAddedToDbFiles,
   removeOffer,
+  getAllOffers,
 } from "./db";
 import { doesFileExist, encodeToBase64, mkDirIfDoesntExist } from "./utility";
 import slugify from "slugify";
@@ -73,27 +74,7 @@ export const fetchNewOffers = async () => {
 
       for (const photoFile of photoFiles) {
         try {
-          const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
-            new RegExp(
-              `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
-            );
-
-          const [offerId, photoNr] = photoFile
-            .match(getPhotoFileNameRegex())!
-            .slice(1);
-
           const desiredLocation = `${PHOTOS_DIR}/${photoFile}`;
-
-          if (photoNr === "1") {
-            const filesToDelete = (await fs.readdir(PHOTOS_DIR)).filter((p) =>
-              p.match(getPhotoFileNameRegex(offerId))
-            );
-            for (const fileToDelete of filesToDelete) {
-              if (await doesFileExist(`${PHOTOS_DIR}/${fileToDelete}`)) {
-                await fs.unlink(`${PHOTOS_DIR}/${fileToDelete}`);
-              }
-            }
-          }
 
           if (await doesFileExist(desiredLocation)) {
             await fs.unlink(desiredLocation);
@@ -252,5 +233,48 @@ export const fetchNewOffers = async () => {
     }
 
     await addAddedToDbFile(fileName);
+  }
+
+  let offersWithPagination: {
+    docs: any[];
+    totalPages: number;
+    page: number;
+  } = (await getAllOffers()) as any;
+
+  const photoFiles = await fs.readdir(PHOTOS_DIR);
+
+  for (let i = 1; i <= offersWithPagination.totalPages; i++) {
+    for (const photoFile of photoFiles) {
+      const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+        new RegExp(
+          `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
+        );
+
+      const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
+
+      const offer = offersWithPagination.docs.find(
+        (of) => of.imoId === offerId
+      );
+
+      if (
+        !offer ||
+        !offer?.photos.find(
+          (p: string) => p.substring(p.lastIndexOf("/") + 1) === photoFile
+        )
+      ) {
+        if (doesFileExist(`${PHOTOS_DIR}/${photoFile}`)) {
+          console.log("a");
+
+          await fs.unlink(`${PHOTOS_DIR}/${photoFile}`);
+          console.log("b");
+        }
+      }
+    }
+
+    if (i !== 1) {
+      offersWithPagination = (await getAllOffers({
+        page: i,
+      })) as any;
+    }
   }
 };

@@ -186,20 +186,18 @@ import fs from "promise-fs";
       `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
     );
 
-  const offerss = ((await getAllOffers()) as any).docs as any[];
+  // const offerss = (await getAllOffers({
+  //   pagination: false,
+  // })) as any[];
 
-  console.log(
-    await asyncEvery(offerss, async (el) => {
-      const photosInFolder = await asyncFilter(
-        await fs.readdir("public/photos"),
-        async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
-      );
+  // for (const el of offerss) {
+  //   const photosInFolder = await asyncFilter(
+  //     await fs.readdir("public/photos"),
+  //     async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
+  //   );
 
-      if (photosInFolder.length !== el.photos.length) {
-        console.log(photosInFolder.length, el.photos.length);
-      }
-
-      return photosInFolder.length === el.photos.length;
-    })
-  );
+  //   // if (photosInFolder.length !== el.photos.length) {
+  //   console.log(photosInFolder.length, el.photos.length);
+  //   // }
+  // }
 })();
