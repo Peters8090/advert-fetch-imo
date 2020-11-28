@@ -85,8 +85,10 @@ export const fetchNewOffers = async () => {
             `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
             desiredLocation
           );
-        } catch (e) {
-          // console.log(`failed to copy file ${photoFile}`);
+        } catch (error) {
+          if (!["EBUSY", "ENOENT"].includes(error.code)) {
+            throw error;
+          }
         }
       }
 

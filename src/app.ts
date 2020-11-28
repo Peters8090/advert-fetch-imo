@@ -165,33 +165,4 @@ import fs from "promise-fs";
   app.listen(important_data.port);
 
   console.log("Server is ready");
-
-  const asyncFilter = async <T>(
-    arr: T[],
-    predicate: (x: T) => Promise<boolean>
-  ): Promise<T[]> => {
-    const results = await Promise.all(arr.map(predicate));
-
-    return arr.filter((_v, index) => results[index]);
-  };
-
-  const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
-    new RegExp(
-      `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
-    );
-
-  let offers = ((await getAllOffersWithoutPagination()) as any[]).map(
-    (el: any) => el.toObject()
-  );
-
-  for (const el of offers) {
-    const photosInFolder = await asyncFilter(
-      await fs.readdir("public/photos"),
-      async (p) => !!p.match(getPhotoFileNameRegex(el.imoId))
-    );
-
-    if (photosInFolder.length !== el.photos.length) {
-      console.log(photosInFolder.length, el.photos.length);
-    }
-  }
 })();
