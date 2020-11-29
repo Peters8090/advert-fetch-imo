@@ -190,8 +190,8 @@ export const fetchNewOffers = async () => {
 
           const photosWithLinks = photosWithNames.map(
             (el) =>
-              `${importantData.serverAddress}:${
-                importantData.port
+              `${importantData.serverAddress}${
+                importantData.isTest ? `:${importantData.port}` : ""
               }/${PHOTOS_DIR.replace("public/", "")}/${el}`
           );
 

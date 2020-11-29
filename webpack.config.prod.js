@@ -6,7 +6,7 @@ module.exports = {
   entry: "./src/app.ts",
   target: "node",
   output: {
-    filename: "app.prod.js",
+    filename: "app.js",
     path: path.resolve(__dirname, "dist"),
   },
   devtool: false,

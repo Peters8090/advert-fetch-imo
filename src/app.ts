@@ -25,8 +25,6 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
   const importantData = await getImportantData();
 
-  console.log(importantData);
-
   if (importantData.isTest) {
     await resetEveryting();
   }
