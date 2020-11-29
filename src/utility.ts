@@ -1,5 +1,6 @@
 import fs from "promise-fs";
 import sanitizeHTML from "sanitize-html";
+import { IMPORTANT_DATA_FILE_PATH } from "./app";
 
 export const expandedLog = (data: any) =>
   console.log(JSON.stringify(data, undefined, 2));
@@ -34,3 +35,6 @@ export const sanitizeString = (str: string) => {
   str = sanitizeHTML(str);
   return str.trim();
 };
+
+export const getImportantData = async () =>
+  JSON.parse(await fs.readFile(IMPORTANT_DATA_FILE_PATH, "utf8"));

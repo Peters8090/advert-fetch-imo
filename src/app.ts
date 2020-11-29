@@ -1,4 +1,3 @@
-import { important_data } from "./important_data";
 import {
   dbInit,
   dropAllAddedToDbFiles,
@@ -14,15 +13,21 @@ import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import bodyParser from "body-parser";
 import { propertiesMappings } from "./propertiesMappings";
-import { doesFileExist, sanitizeString } from "./utility";
+import { doesFileExist, getImportantData, sanitizeString } from "./utility";
 import cors from "cors";
 import lodash from "lodash";
 import fs from "promise-fs";
 
+export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
+
 (async () => {
   await dbInit();
 
-  if (important_data.isTest) {
+  const importantData = await getImportantData();
+
+  console.log(importantData);
+
+  if (importantData.isTest) {
     await resetEveryting();
   }
 
@@ -33,7 +38,7 @@ import fs from "promise-fs";
 
   await cronCallback();
 
-  scheduleJob(important_data.cronSchedule, cronCallback);
+  scheduleJob(importantData.cronSchedule, cronCallback);
   const app = express();
 
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -162,7 +167,7 @@ import fs from "promise-fs";
       res.end(JSON.stringify(resp));
     }
   });
-  app.listen(important_data.port);
+  app.listen(importantData.port);
 
   console.log("Server is ready");
 })();

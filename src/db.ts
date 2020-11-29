@@ -1,5 +1,7 @@
-import { important_data } from "./important_data";
 import mongoose from "mongoose";
+import { IMPORTANT_DATA_FILE_PATH } from "./app";
+import fs from "promise-fs";
+import { getImportantData } from "./utility";
 
 const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
@@ -11,8 +13,10 @@ const Offers = mongoose.model("offers", offersSchema);
 const addedToDbFilesSchema = new mongoose.Schema({ fileName: String });
 const AddedToDbFiles = mongoose.model("addedToDbFiles", addedToDbFilesSchema);
 
-export const dbInit = () => {
-  return mongoose.connect(important_data.dbUri, { useNewUrlParser: true });
+export const dbInit = async () => {
+  const importantData = await getImportantData();
+
+  return await mongoose.connect(importantData.dbUri, { useNewUrlParser: true });
 };
 
 export const addAddedToDbFile = (fileName: string) => {

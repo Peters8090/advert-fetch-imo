@@ -1,5 +1,4 @@
 import rmfr from "rmfr";
-import { important_data } from "./important_data";
 import extract from "extract-zip";
 import fs from "promise-fs";
 import lodash from "lodash";
@@ -15,7 +14,12 @@ import {
   getAllOffers,
   getAllOffersWithoutPagination,
 } from "./db";
-import { doesFileExist, encodeToBase64, mkDirIfDoesntExist } from "./utility";
+import {
+  doesFileExist,
+  encodeToBase64,
+  getImportantData,
+  mkDirIfDoesntExist,
+} from "./utility";
 import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
@@ -27,6 +31,8 @@ export const fetchNewOffers = async () => {
   await mkDirIfDoesntExist(PACKED_ADVERTS_DIR);
   await mkDirIfDoesntExist(UNPACKED_ADVERTS_DIR);
   await mkDirIfDoesntExist(PHOTOS_DIR);
+
+  const importantData = await getImportantData();
 
   let filesToUnpack: string[] = lodash.difference(
     await fs.readdir(PACKED_ADVERTS_DIR),
@@ -184,8 +190,8 @@ export const fetchNewOffers = async () => {
 
           const photosWithLinks = photosWithNames.map(
             (el) =>
-              `${important_data.serverAddress}:${
-                important_data.port
+              `${importantData.serverAddress}:${
+                importantData.port
               }/${PHOTOS_DIR.replace("public/", "")}/${el}`
           );
 
