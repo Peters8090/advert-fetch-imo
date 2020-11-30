@@ -68,13 +68,28 @@ export const dropAllAddedToDbFiles = () => {
   return AddedToDbFiles.deleteMany({}, () => {});
 };
 
-export const getAllOffers = (conditions?: Record<string, any>) => {
-  const aggregateQuery = Offers.aggregate();
+export const getAllOffers = (conditions: Record<string, any> = {}) => {
+  const conditionsPagination = {
+    page: conditions?.page,
+    limit: conditions?.limit,
+  };
+
+  const conditionsFiltering = Object.fromEntries(
+    Object.entries(conditions).filter(
+      ([key]) => !["limit", "page"].includes(key)
+    )
+  );
+
+  const aggregateQuery = Offers.aggregate([
+    {
+      $match: conditionsFiltering,
+    },
+  ]);
 
   return new Promise((resolve) => {
     (Offers as any).aggregatePaginate(
       aggregateQuery,
-      conditions,
+      conditionsPagination,
       (_: any, res: any) => {
         resolve(res);
       }
