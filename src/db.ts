@@ -96,13 +96,3 @@ export const getAllOffers = (conditions: Record<string, any> = {}) => {
     );
   });
 };
-
-export const getAllOffersWithoutPagination = (
-  conditions: Record<string, any> = {}
-) => {
-  return new Promise((resolve) => {
-    Offers.find(conditions, (_, res) => {
-      resolve(res);
-    });
-  });
-};

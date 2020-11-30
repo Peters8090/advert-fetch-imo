@@ -12,7 +12,6 @@ import {
   getAllAddedToDbFiles,
   removeOffer,
   getAllOffers,
-  getAllOffersWithoutPagination,
 } from "./db";
 import {
   doesFileExist,

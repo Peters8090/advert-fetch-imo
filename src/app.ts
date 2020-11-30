@@ -3,7 +3,6 @@ import {
   dropAllAddedToDbFiles,
   dropAllOffers,
   getAllOffers,
-  getAllOffersWithoutPagination,
 } from "./db";
 import http from "http";
 import { fetchNewOffers, UNPACKED_ADVERTS_DIR } from "./fetchNewOffers";
