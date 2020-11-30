@@ -83,7 +83,9 @@ export const fetchNewOffers = async () => {
           const desiredLocation = `${PHOTOS_DIR}/${photoFile}`;
 
           if (await doesFileExist(desiredLocation)) {
-            await fs.unlink(desiredLocation);
+            try {
+              await fs.unlink(desiredLocation);
+            } catch (e) {}
           }
 
           await fs.copyFile(
@@ -282,7 +284,9 @@ export const fetchNewOffers = async () => {
         (p: string) => p.substring(p.lastIndexOf("/") + 1) === photoFile
       )
     ) {
-      await fs.unlink(`${PHOTOS_DIR}/${photoFile}`);
+      try {
+        await fs.unlink(`${PHOTOS_DIR}/${photoFile}`);
+      } catch (e) {}
     }
   }
 };
