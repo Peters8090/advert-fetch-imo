@@ -76,13 +76,12 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
     }[] = [
       {
         fieldName: "property_type",
-        isAllowed: (value: string) =>
-          isAllowedValidators.inList([
-            "mieszkania",
-            "domy",
-            "dzialki",
-            "lokale",
-          ]),
+        isAllowed: isAllowedValidators.inList([
+          "mieszkania",
+          "domy",
+          "dzialki",
+          "lokale",
+        ]),
       },
       {
         fieldName: "transaction_type",
