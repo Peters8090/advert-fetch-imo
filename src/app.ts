@@ -14,7 +14,7 @@ import bodyParser from "body-parser";
 import { propertiesMappings } from "./propertiesMappings";
 import { doesFileExist, getImportantData, sanitizeString } from "./utility";
 import cors from "cors";
-import lodash from "lodash";
+import lodash, { values } from "lodash";
 import fs from "promise-fs";
 
 export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
@@ -159,17 +159,29 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         }),
       };
 
-      resp.docs = resp.docs.map((el) =>
-        Object.fromEntries(
-          Object.entries(el)
-            .filter(([key]) => propertiesMappings[key])
-            .map(([key, value]) => {
-              if (!propertiesMappings[key]) console.log(key);
+      const newDocs: any[] = new Array(resp.docs.length)
+        .fill(null)
+        .map(() =>
+          Object.fromEntries(
+            Object.entries(propertiesMappings).map(([key]) => [key, {}])
+          )
+        );
 
-              return [propertiesMappings[key] ?? key, value];
-            })
-        )
+      resp.docs.forEach((offer, i) =>
+        Object.entries(offer).forEach(([propertyName, propertyValue]) => {
+          Object.entries(propertiesMappings).forEach(
+            ([mappingGroup, mappingProperties]) => {
+              if (mappingProperties[propertyName]) {
+                newDocs[i][mappingGroup][
+                  mappingProperties[propertyName]
+                ] = propertyValue;
+              }
+            }
+          );
+        })
       );
+
+      resp.docs = newDocs;
 
       res.writeHead(200);
 
