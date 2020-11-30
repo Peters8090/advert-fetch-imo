@@ -69,10 +69,11 @@ export const dropAllAddedToDbFiles = () => {
 };
 
 export const getAllOffers = (conditions: Record<string, any> = {}) => {
-  const conditionsPagination = {
-    page: conditions?.page,
-    limit: conditions?.limit,
-  };
+  const conditionsPagination = Object.fromEntries(
+    Object.entries(conditions).filter(([key]) =>
+      ["limit", "page"].includes(key)
+    )
+  );
 
   const conditionsFiltering = Object.fromEntries(
     Object.entries(conditions).filter(

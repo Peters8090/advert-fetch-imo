@@ -138,7 +138,20 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
     if (error) {
       res.writeHead(400);
-      res.end(JSON.stringify([]));
+      res.end(
+        JSON.stringify({
+          docs: [],
+          totalDocs: 0,
+          limit: null,
+          page: 1,
+          totalPages: 1,
+          pagingCounter: null,
+          hasPrevPage: false,
+          hasNextPage: false,
+          prevPage: null,
+          nextPage: null,
+        })
+      );
     } else {
       const resp = {
         ...((await getAllOffers({ ...defaultFilters, ...chosenFilters })) as {
