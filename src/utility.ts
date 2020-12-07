@@ -20,11 +20,7 @@ export const doesFileExist = async (fileName: string) => {
     await fs.stat(fileName);
     return true;
   } catch (error) {
-    if (error.code === "ENOENT") {
-      return false;
-    } else {
-      throw error;
-    }
+    return false;
   }
 };
 

@@ -1,17 +1,17 @@
-import rmfr from "rmfr";
 import extract from "extract-zip";
-import fs from "promise-fs";
 import lodash from "lodash";
+import fs from "promise-fs";
+import slugify from "slugify";
 import { xml2js } from "xml-js";
 import {
   addAddedToDbFile,
   addOffer,
-  updateOffer,
   dropAllOffers,
   findOffer,
   getAllAddedToDbFiles,
-  removeOffer,
   getAllOffers,
+  removeOffer,
+  updateOffer,
 } from "./db";
 import {
   doesFileExist,
@@ -19,7 +19,6 @@ import {
   getImportantData,
   mkDirIfDoesntExist,
 } from "./utility";
-import slugify from "slugify";
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";

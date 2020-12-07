@@ -1,21 +1,13 @@
-import {
-  dbInit,
-  dropAllAddedToDbFiles,
-  dropAllOffers,
-  getAllOffers,
-} from "./db";
-import http from "http";
-import { fetchNewOffers, UNPACKED_ADVERTS_DIR } from "./fetchNewOffers";
-import { scheduleJob } from "node-schedule";
-import { resetEveryting } from "./resetEverything";
+import bodyParser from "body-parser";
+import cors from "cors";
 import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
-import bodyParser from "body-parser";
+import { scheduleJob } from "node-schedule";
+import { dbInit, getAllOffers } from "./db";
+import { fetchNewOffers } from "./fetchNewOffers";
 import { propertiesMappings } from "./propertiesMappings";
-import { doesFileExist, getImportantData, sanitizeString } from "./utility";
-import cors from "cors";
-import lodash, { values } from "lodash";
-import fs from "promise-fs";
+import { resetEveryting } from "./resetEverything";
+import { getImportantData, sanitizeString } from "./utility";
 
 export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
@@ -52,15 +44,22 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
       inList: (list: string[]) => (value: string) =>
         list.find((v) => v === value),
       isRange: () => (value: string) => {
-        const res = /^\[([0-9]+)-([0-9]+)]$/.exec(value);
+        const res = /^\[([0-9.]+|null)-([0-9.]+|null)]$/.exec(value);
         if (!res) {
           return;
         }
-        const [min, max] = [...res].slice(1).map((el) => +el);
+        const [min, max] = [...res].slice(1);
+
+        console.log({
+          min,
+          max,
+          $gte: min === "null" ? -Infinity : +min,
+          $lte: max === "null" ? Infinity : +max,
+        });
 
         return {
-          $gte: min,
-          $lte: max,
+          $gte: min === "null" ? -Infinity : +min,
+          $lte: max === "null" ? Infinity : +max,
         };
       },
       search: () => (value: string) => ({
