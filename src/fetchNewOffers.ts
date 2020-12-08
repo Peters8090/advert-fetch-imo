@@ -84,13 +84,12 @@ export const fetchNewOffers = async () => {
           if (await doesFileExist(desiredLocation)) {
             try {
               await fs.unlink(desiredLocation);
+              await fs.copyFile(
+                `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
+                desiredLocation
+              );
             } catch (e) {}
           }
-
-          await fs.copyFile(
-            `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
-            desiredLocation
-          );
         } catch (error) {
           if (!["EBUSY", "ENOENT"].includes(error.code)) {
             throw error;

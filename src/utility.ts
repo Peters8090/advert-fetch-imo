@@ -8,11 +8,7 @@ export const expandedLog = (data: any) =>
 export const mkDirIfDoesntExist = async (fileName: string) => {
   try {
     await fs.mkdir(fileName);
-  } catch (error) {
-    if (error.code !== "EEXIST") {
-      throw error;
-    }
-  }
+  } catch (e) {}
 };
 
 export const doesFileExist = async (fileName: string) => {

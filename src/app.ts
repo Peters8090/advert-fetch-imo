@@ -50,13 +50,6 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         }
         const [min, max] = [...res].slice(1);
 
-        console.log({
-          min,
-          max,
-          $gte: min === "null" ? -Infinity : +min,
-          $lte: max === "null" ? Infinity : +max,
-        });
-
         return {
           $gte: min === "null" ? -Infinity : +min,
           $lte: max === "null" ? Infinity : +max,
