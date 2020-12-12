@@ -22,12 +22,14 @@ import {
 
 export const UNPACKED_ADVERTS_DIR = "adverts_unpacked";
 const PACKED_ADVERTS_DIR = "adverts_packed";
-export const PHOTOS_DIR = "public/photos";
+const PUBLIC_DIR = "public";
+export const PHOTOS_DIR = `${PUBLIC_DIR}/photos`;
 const OFFERS_XML_FILENAME = "oferty.xml";
 
 export const fetchNewOffers = async () => {
   await mkDirIfDoesntExist(PACKED_ADVERTS_DIR);
   await mkDirIfDoesntExist(UNPACKED_ADVERTS_DIR);
+  await mkDirIfDoesntExist(PUBLIC_DIR);
   await mkDirIfDoesntExist(PHOTOS_DIR);
 
   const importantData = await getImportantData();
@@ -82,19 +84,13 @@ export const fetchNewOffers = async () => {
           const desiredLocation = `${PHOTOS_DIR}/${photoFile}`;
 
           if (await doesFileExist(desiredLocation)) {
-            try {
-              await fs.unlink(desiredLocation);
-              await fs.copyFile(
-                `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
-                desiredLocation
-              );
-            } catch (e) {}
+            await fs.unlink(desiredLocation);
           }
-        } catch (error) {
-          if (!["EBUSY", "ENOENT"].includes(error.code)) {
-            throw error;
-          }
-        }
+          await fs.copyFile(
+            `${UNPACKED_ADVERTS_DIR}/${file}/${photoFile}`,
+            desiredLocation
+          );
+        } catch (error) {}
       }
 
       return [file, xml2js(xmlContent).elements[0].elements] as [
