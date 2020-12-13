@@ -56,7 +56,7 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         };
       },
       search: () => (value: string) => ({
-        $regex: ".*" + sanitizeString(value) + ".*",
+        $regex: ".*" + "(?i)" + sanitizeString(value) + ".*",
       }),
       normal: () => (value: string) => +sanitizeString(value),
     };
