@@ -7,7 +7,7 @@ import { dbInit, getAllOffers } from "./db";
 import { fetchNewOffers } from "./fetchNewOffers";
 import { propertiesMappings } from "./propertiesMappings";
 import { resetEveryting } from "./resetEverything";
-import { getImportantData, sanitizeString } from "./utility";
+import { diactriticSafe, getImportantData, sanitizeString } from "./utility";
 
 export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
@@ -56,7 +56,7 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         };
       },
       search: () => (value: string) => ({
-        $regex: ".*" + "(?i)" + sanitizeString(value) + ".*",
+        $regex: ".*" + "(?i)" + diactriticSafe(sanitizeString(value)) + ".*",
       }),
       normal: () => (value: string) => +sanitizeString(value),
     };
@@ -118,6 +118,9 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
       const foundFilter = filterList.find((f) => f.fieldName === name);
       if (foundFilter) {
         const res = foundFilter.isAllowed(`${value}`);
+
+        console.log(res);
+
         if (res) {
           chosenFilters[name] = res;
         } else {

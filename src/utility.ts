@@ -30,3 +30,37 @@ export const sanitizeString = (str: string) => {
 
 export const getImportantData = async () =>
   JSON.parse(await fs.readFile(IMPORTANT_DATA_FILE_PATH, "utf8"));
+
+export const replaceAll = (
+  str: string,
+  find: string,
+  replace: string
+): string => {
+  return str ? str.replace(new RegExp(find, "g"), replace) : "";
+};
+
+const removeDiacritics = (str: string) =>
+  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+export const diactriticSafe = (str: string) => {
+  const diactriticLetters = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
+
+  const diactriticLettersCopy1 = [...diactriticLetters];
+  for (const diactriticLetter of diactriticLettersCopy1) {
+    diactriticLetters.push(removeDiacritics(diactriticLetter));
+  }
+
+  const diactriticLettersCopy2 = [...diactriticLetters];
+  for (const diactriticLetter of diactriticLettersCopy2) {
+    diactriticLetters.push(diactriticLetter.toUpperCase());
+  }
+
+  for (const diactriticLetter of diactriticLetters) {
+    str = replaceAll(
+      str,
+      "((?!\\[).)" + diactriticLetter,
+      `\1[${diactriticLetter}${removeDiacritics(diactriticLetter)}]`
+    );
+  }
+  return str;
+};
