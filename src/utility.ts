@@ -39,12 +39,12 @@ export const replaceAll = (
   return str ? str.replace(new RegExp(find, "g"), replace) : "";
 };
 
+const onlyDiactritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ż", "ź"];
+
 const removeDiacritics = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 export const diactriticSafe = (str: string) => {
-  const onlyDiactritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
-
   const diactriticLetters = [...onlyDiactritic];
 
   str = str
@@ -55,7 +55,11 @@ export const diactriticSafe = (str: string) => {
           removeDiacritics(s).toLowerCase() ===
           removeDiacritics(diactriticLetter)
         ) {
-          return `[${diactriticLetter}${removeDiacritics(diactriticLetter)}]`;
+          return `[${diactriticLetter}${removeDiacritics(
+            diactriticLetter
+          )}${diactriticLetter.toUpperCase()}${removeDiacritics(
+            diactriticLetter
+          ).toUpperCase()}]`;
         }
       }
       return s;
