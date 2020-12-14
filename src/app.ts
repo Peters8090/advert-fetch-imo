@@ -8,7 +8,7 @@ import { fetchNewOffers } from "./fetchNewOffers";
 import { propertiesMappings } from "./propertiesMappings";
 import { resetEveryting } from "./resetEverything";
 import {
-  diactriticAndCaseSafeRegex,
+  convertToSearchRegex,
   getImportantData,
   sanitizeString,
 } from "./utility";
@@ -60,7 +60,7 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         };
       },
       search: () => (value: string) => ({
-        $regex: ".*" + diactriticAndCaseSafeRegex(sanitizeString(value)) + ".*",
+        $regex: convertToSearchRegex(sanitizeString(value)),
       }),
       normal: () => (value: string) => +sanitizeString(value),
     };
@@ -122,8 +122,6 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
       const foundFilter = filterList.find((f) => f.fieldName === name);
       if (foundFilter) {
         const res = foundFilter.isAllowed(`${value}`);
-
-        console.log(res);
 
         if (res) {
           chosenFilters[name] = res;

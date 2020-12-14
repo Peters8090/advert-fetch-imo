@@ -40,12 +40,22 @@ export const replaceAll = (
   return str ? str.replace(new RegExp(find, "g"), replace) : "";
 };
 
-export const diactriticAndCaseSafeRegex = (str: string) => {
+export const removeMultipleSpaces = (str: string) =>
+  str.replace(/ +(?= )/g, "");
+
+// makes the text insensitive to: text casing, diacritic, order
+export const convertToSearchRegex = (str: string) => {
   const onlyDiacritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
+
+  str = removeMultipleSpaces(str);
 
   str = str
     .split("")
     .map((s) => {
+      if (s === " ") {
+        return s;
+      }
+
       let chars = "";
       chars += s.toLowerCase();
       chars += s.toUpperCase();
@@ -62,5 +72,11 @@ export const diactriticAndCaseSafeRegex = (str: string) => {
       return `[${chars}]`;
     })
     .join("");
+
+  str = str
+    .split(" ")
+    .map((s) => `(?=.*${s})`)
+    .join("");
+
   return str;
 };
