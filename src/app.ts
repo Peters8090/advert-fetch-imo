@@ -5,13 +5,10 @@ import mongoSanitize from "express-mongo-sanitize";
 import { scheduleJob } from "node-schedule";
 import { dbInit, getAllOffers } from "./db";
 import { fetchNewOffers } from "./fetchNewOffers";
+import { extractFilters } from "./filters";
 import { propertiesMappings } from "./propertiesMappings";
 import { resetEveryting } from "./resetEverything";
-import {
-  convertToSearchRegex,
-  getImportantData,
-  sanitizeString,
-} from "./utility";
+import { getImportantData } from "./utility";
 
 export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
@@ -44,147 +41,78 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
   app.get("/", async (req, res) => {
     res.setHeader("Content-Type", "application/json");
 
-    const isAllowedValidators = {
-      inList: (list: string[]) => (value: string) =>
-        list.find((v) => v === value),
-      isRange: () => (value: string) => {
-        const res = /^\[([0-9.]+|null)-([0-9.]+|null)]$/.exec(value);
-        if (!res) {
-          return;
-        }
-        const [min, max] = [...res].slice(1);
+    const filters = extractFilters(req.query);
 
-        return {
-          $gte: min === "null" ? -Infinity : +min,
-          $lte: max === "null" ? Infinity : +max,
-        };
-      },
-      search: () => (value: string) => ({
-        $regex: convertToSearchRegex(sanitizeString(value)),
+    const resp = {
+      ...((await getAllOffers(filters)) as {
+        docs: any[];
       }),
-      normal: () => (value: string) => +sanitizeString(value),
     };
 
-    const filterList: {
-      fieldName: string;
-      isAllowed: (value: string) => any;
-    }[] = [
-      {
-        fieldName: "property_type",
-        isAllowed: isAllowedValidators.inList([
-          "mieszkania",
-          "domy",
-          "dzialki",
-          "lokale",
-        ]),
-      },
-      {
-        fieldName: "transaction_type",
-        isAllowed: isAllowedValidators.inList(["sprzedaz", "wynajem"]),
-      },
-      {
-        fieldName: "price",
-        isAllowed: isAllowedValidators.isRange(),
-      },
-      {
-        fieldName: "powierzchnia",
-        isAllowed: isAllowedValidators.isRange(),
-      },
-      {
-        fieldName: "liczbapokoi",
-        isAllowed: isAllowedValidators.isRange(),
-      },
-      {
-        fieldName: "location",
-        isAllowed: isAllowedValidators.search(),
-      },
-      {
-        fieldName: "advertisement_text",
-        isAllowed: isAllowedValidators.search(),
-      },
-      {
-        fieldName: "page",
-        isAllowed: isAllowedValidators.normal(),
-      },
-      {
-        fieldName: "limit",
-        isAllowed: isAllowedValidators.normal(),
-      },
-    ];
+    const newDocs: any[] = new Array(resp.docs.length)
+      .fill(null)
+      .map(() =>
+        Object.fromEntries(
+          Object.entries(propertiesMappings).map(([key]) => [key, {}])
+        )
+      );
 
-    const defaultFilters: Record<string, any> = {
-      limit: 10,
-    };
-    let chosenFilters: Record<string, any> = {};
+    resp.docs.forEach((offer, i) =>
+      Object.entries(offer).forEach(([propertyName, propertyValue]) => {
+        Object.entries(propertiesMappings).forEach(
+          ([mappingGroup, mappingProperties]) => {
+            if (mappingProperties[propertyName]) {
+              newDocs[i][mappingGroup][
+                mappingProperties[propertyName]
+              ] = propertyValue;
+            }
+          }
+        );
+      })
+    );
 
-    let error = false;
-    for (const [name, value] of Object.entries(req.query)) {
-      const foundFilter = filterList.find((f) => f.fieldName === name);
-      if (foundFilter) {
-        const res = foundFilter.isAllowed(`${value}`);
+    resp.docs = newDocs;
 
-        if (res) {
-          chosenFilters[name] = res;
-        } else {
-          error = true;
-        }
-      } else {
-        error = true;
-      }
+    res.writeHead(200);
+
+    res.end(JSON.stringify(resp));
+  });
+
+  app.get("/which-page", async (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+
+    const slug = req.query.slug;
+    if (!slug) {
+      res.writeHead(400);
+      return res.end();
     }
 
-    if (error) {
-      res.writeHead(400);
-      res.end(
-        JSON.stringify({
-          docs: [],
-          totalDocs: 0,
-          limit: null,
-          page: 1,
-          totalPages: 1,
-          pagingCounter: null,
-          hasPrevPage: false,
-          hasNextPage: false,
-          prevPage: null,
-          nextPage: null,
-        })
-      );
-    } else {
+    const filters = extractFilters(req.query);
+
+    let maxPages = 1;
+    for (let page = 1; page <= maxPages; page++) {
       const resp = {
-        ...((await getAllOffers({ ...defaultFilters, ...chosenFilters })) as {
+        ...((await getAllOffers({ ...filters, page: page })) as {
+          totalPages: number;
           docs: any[];
         }),
       };
 
-      const newDocs: any[] = new Array(resp.docs.length)
-        .fill(null)
-        .map(() =>
-          Object.fromEntries(
-            Object.entries(propertiesMappings).map(([key]) => [key, {}])
-          )
+      maxPages = resp.totalPages;
+
+      if (resp.docs.find((o) => o.slug === slug)) {
+        res.writeHead(200);
+        return res.end(
+          JSON.stringify({
+            page: page,
+          })
         );
-
-      resp.docs.forEach((offer, i) =>
-        Object.entries(offer).forEach(([propertyName, propertyValue]) => {
-          Object.entries(propertiesMappings).forEach(
-            ([mappingGroup, mappingProperties]) => {
-              if (mappingProperties[propertyName]) {
-                newDocs[i][mappingGroup][
-                  mappingProperties[propertyName]
-                ] = propertyValue;
-              }
-            }
-          );
-        })
-      );
-
-      resp.docs = newDocs;
-
-      res.writeHead(200);
-
-      res.end(JSON.stringify(resp));
+      }
     }
+    res.writeHead(404);
+    return res.end();
   });
+
   app.listen(importantData.port);
 
   console.log("Server is ready");
