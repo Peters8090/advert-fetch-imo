@@ -43,24 +43,23 @@ const removeDiacritics = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 export const diactriticSafe = (str: string) => {
-  const diactriticLetters = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
+  const onlyDiactritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
 
-  for (const diactriticLetter of diactriticLetters) {
-    const replace = (letter: string) =>
-      (str = str
-        .split("")
-        .map((s) =>
-          s === diactriticLetter
-            ? `[${diactriticLetters.find(
-                (d) => removeDiacritics(d) === removeDiacritics(letter)
-              )}${removeDiacritics(diactriticLetter)}]`
-            : s
-        )
-        .join(""));
+  const diactriticLetters = [...onlyDiactritic];
 
-    str = replace(removeDiacritics(diactriticLetter));
-    str = replace(diactriticLetter);
-    str = replace(diactriticLetter.toUpperCase());
-  }
+  str = str
+    .split("")
+    .map((s) => {
+      for (const diactriticLetter of diactriticLetters) {
+        if (
+          removeDiacritics(s).toLowerCase() ===
+          removeDiacritics(diactriticLetter)
+        ) {
+          return `[${diactriticLetter}${removeDiacritics(diactriticLetter)}]`;
+        }
+      }
+      return s;
+    })
+    .join("");
   return str;
 };
