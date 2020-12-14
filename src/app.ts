@@ -7,7 +7,11 @@ import { dbInit, getAllOffers } from "./db";
 import { fetchNewOffers } from "./fetchNewOffers";
 import { propertiesMappings } from "./propertiesMappings";
 import { resetEveryting } from "./resetEverything";
-import { diactriticSafe, getImportantData, sanitizeString } from "./utility";
+import {
+  diactriticAndCaseSafeRegex,
+  getImportantData,
+  sanitizeString,
+} from "./utility";
 
 export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
@@ -56,7 +60,7 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
         };
       },
       search: () => (value: string) => ({
-        $regex: ".*" + "(?i)" + diactriticSafe(sanitizeString(value)) + ".*",
+        $regex: ".*" + diactriticAndCaseSafeRegex(sanitizeString(value)) + ".*",
       }),
       normal: () => (value: string) => +sanitizeString(value),
     };

@@ -1,3 +1,4 @@
+import latinize from "latinize";
 import fs from "promise-fs";
 import sanitizeHTML from "sanitize-html";
 import { IMPORTANT_DATA_FILE_PATH } from "./app";
@@ -39,30 +40,26 @@ export const replaceAll = (
   return str ? str.replace(new RegExp(find, "g"), replace) : "";
 };
 
-const onlyDiactritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ż", "ź"];
-
-const removeDiacritics = (str: string) =>
-  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-export const diactriticSafe = (str: string) => {
-  const diactriticLetters = [...onlyDiactritic];
+export const diactriticAndCaseSafeRegex = (str: string) => {
+  const onlyDiacritic = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
 
   str = str
     .split("")
     .map((s) => {
-      for (const diactriticLetter of diactriticLetters) {
+      let chars = "";
+      chars += s.toLowerCase();
+      chars += s.toUpperCase();
+      for (const diactriticLetter of onlyDiacritic) {
         if (
-          removeDiacritics(s).toLowerCase() ===
-          removeDiacritics(diactriticLetter)
+          latinize(s).toLowerCase() === latinize(diactriticLetter).toLowerCase()
         ) {
-          return `[${diactriticLetter}${removeDiacritics(
-            diactriticLetter
-          )}${diactriticLetter.toUpperCase()}${removeDiacritics(
-            diactriticLetter
-          ).toUpperCase()}]`;
+          chars += diactriticLetter.toLowerCase();
+          chars += diactriticLetter.toUpperCase();
+          chars += latinize(diactriticLetter).toLowerCase();
+          chars += latinize(diactriticLetter).toUpperCase();
         }
       }
-      return s;
+      return `[${chars}]`;
     })
     .join("");
   return str;
