@@ -45,22 +45,22 @@ const removeDiacritics = (str: string) =>
 export const diactriticSafe = (str: string) => {
   const diactriticLetters = ["ą", "ć", "ę", "ł", "ń", "ó", "ś", "ź", "ż"];
 
-  const diactriticLettersCopy1 = [...diactriticLetters];
-  for (const diactriticLetter of diactriticLettersCopy1) {
-    diactriticLetters.push(removeDiacritics(diactriticLetter));
-  }
-
-  const diactriticLettersCopy2 = [...diactriticLetters];
-  for (const diactriticLetter of diactriticLettersCopy2) {
-    diactriticLetters.push(diactriticLetter.toUpperCase());
-  }
-
   for (const diactriticLetter of diactriticLetters) {
-    str = replaceAll(
-      str,
-      "((?!\\[).)" + diactriticLetter,
-      `\1[${diactriticLetter}${removeDiacritics(diactriticLetter)}]`
-    );
+    const replace = (letter: string) =>
+      (str = str
+        .split("")
+        .map((s) =>
+          s === diactriticLetter
+            ? `[${diactriticLetters.find(
+                (d) => removeDiacritics(d) === removeDiacritics(letter)
+              )}${removeDiacritics(diactriticLetter)}]`
+            : s
+        )
+        .join(""));
+
+    str = replace(removeDiacritics(diactriticLetter));
+    str = replace(diactriticLetter);
+    str = replace(diactriticLetter.toUpperCase());
   }
   return str;
 };
