@@ -128,13 +128,13 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
       },
     });
 
-    const text = req.body.text;
+    const message = req.body.message;
     const sender = req.body.sender;
     const email = req.body.email;
     const phoneNumber = req.body.phoneNumber;
 
     if (
-      !text ||
+      !message ||
       !sender ||
       !email ||
       !phoneNumber ||
@@ -148,7 +148,7 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
     const mailOpts: Mail.Options = {
       to: importantData.mailConfig.toEmail,
       subject: `Nowa wiadomość z formularza kontaktowego na ${importantData.frontendAddress} od ${sender}`,
-      text: `Email: ${email}. Telefon: ${phoneNumber}.\n\n${text}`,
+      text: `Email: ${email}. Telefon: ${phoneNumber}.\n\n${message}`,
     };
 
     smtpTrans.sendMail(mailOpts, (error) => {
