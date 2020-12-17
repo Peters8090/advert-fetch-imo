@@ -3,6 +3,8 @@ import cors from "cors";
 import express from "express";
 import mongoSanitize from "express-mongo-sanitize";
 import { scheduleJob } from "node-schedule";
+import nodemailer from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
 import { dbInit, getAllOffers } from "./db";
 import { fetchNewOffers } from "./fetchNewOffers";
 import { extractFilters } from "./filters";
@@ -111,6 +113,55 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
     }
     res.writeHead(404);
     return res.end();
+  });
+
+  app.post("/contact-form", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+
+    const smtpTrans = nodemailer.createTransport({
+      host: importantData.mailConfig.smtpConfig.host,
+      port: importantData.mailConfig.smtpConfig.port,
+      secure: importantData.mailConfig.smtpConfig.secure,
+      auth: {
+        user: importantData.mailConfig.smtpConfig.user,
+        pass: importantData.mailConfig.smtpConfig.password,
+      },
+    });
+
+    const text = req.body.text;
+    const sender = req.body.sender;
+    const email = req.body.email;
+    const phoneNumber = req.body.phoneNumber;
+
+    if (
+      !text ||
+      !sender ||
+      !email ||
+      !phoneNumber ||
+      !email.includes("@") ||
+      !phoneNumber.split("").find((s: any) => !isNaN(+s))
+    ) {
+      res.writeHead(400);
+      return res.end();
+    }
+
+    const mailOpts: Mail.Options = {
+      to: importantData.mailConfig.toEmail,
+      subject: `Nowa wiadomość z formularza kontaktowego na ${importantData.frontendAddress} od ${sender}`,
+      text: `Email: ${email}. Telefon: ${phoneNumber}.\n\n${text}`,
+    };
+
+    smtpTrans.sendMail(mailOpts, (error) => {
+      if (error) {
+        console.log(error);
+
+        res.writeHead(500);
+        return res.end();
+      } else {
+        res.writeHead(200);
+        return res.end();
+      }
+    });
   });
 
   app.listen(importantData.port);
