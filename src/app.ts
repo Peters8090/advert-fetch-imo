@@ -35,7 +35,11 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
-  app.use(cors());
+  app.use(
+    cors({
+      origin: importantData.corsOrigin,
+    })
+  );
   app.use(mongoSanitize());
   app.use(require("content-filter")());
   app.use(express.static("public"));
