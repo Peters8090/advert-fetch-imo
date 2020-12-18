@@ -24,6 +24,7 @@ export const extractFilters = (query: object) => {
 
   const filterList: {
     fieldName: string;
+    aliasName?: string;
     isAllowed: (value: string) => any;
   }[] = [
     {
@@ -45,10 +46,12 @@ export const extractFilters = (query: object) => {
     },
     {
       fieldName: "powierzchnia",
+      aliasName: "area",
       isAllowed: isAllowedValidators.isRange(),
     },
     {
       fieldName: "liczbapokoi",
+      aliasName: "rooms",
       isAllowed: isAllowedValidators.isRange(),
     },
     {
@@ -57,6 +60,7 @@ export const extractFilters = (query: object) => {
     },
     {
       fieldName: "advertisement_text",
+      aliasName: "search",
       isAllowed: isAllowedValidators.search(),
     },
     {
@@ -75,12 +79,14 @@ export const extractFilters = (query: object) => {
   let chosenFilters: Record<string, any> = {};
 
   for (const [name, value] of Object.entries(query)) {
-    const foundFilter = filterList.find((f) => f.fieldName === name);
+    const foundFilter = filterList.find(
+      (f) => (f.aliasName ?? f.fieldName) === name
+    );
     if (foundFilter) {
       const res = foundFilter.isAllowed(`${value}`);
 
       if (res) {
-        chosenFilters[name] = res;
+        chosenFilters[foundFilter.fieldName] = res;
       }
     }
   }
