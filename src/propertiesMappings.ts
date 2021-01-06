@@ -18,7 +18,7 @@ export const propertiesMappings: {
     photos: "photos",
   },
   params: {
-    imoId: "ID",
+    imoId: "Numer oferty",
     transaction_type: "Typ transakcji",
     rynek_pierwotny: "Rynek pierwotny",
     powierzchnia: "Powierzchnia [m²]",
