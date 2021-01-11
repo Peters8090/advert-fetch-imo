@@ -16,10 +16,23 @@ export const extractFilters = (query: object) => {
         $lte: max === "null" ? Infinity : +max,
       };
     },
-    search: () => (value: string) => ({
-      $regex: convertToSearchRegex(sanitizeString(value)),
-    }),
-    normal: () => (value: string) => +sanitizeString(value),
+    search: (condition: (value: string) => boolean = () => true) => (
+      value: string
+    ) =>
+      condition(sanitizeString(value))
+        ? {
+            $regex: convertToSearchRegex(sanitizeString(value)),
+          }
+        : undefined,
+    normal: (
+      convertToNumber: boolean = false,
+      condition: (value: string) => boolean = () => true
+    ) => (value: string) =>
+      condition(sanitizeString(value))
+        ? convertToNumber
+          ? +sanitizeString(value)
+          : sanitizeString(value)
+        : undefined,
   };
 
   const filterList: {
@@ -61,15 +74,20 @@ export const extractFilters = (query: object) => {
     {
       fieldName: "advertisement_text",
       aliasName: "search",
-      isAllowed: isAllowedValidators.search(),
+      isAllowed: isAllowedValidators.search((value) => !+value),
+    },
+    {
+      fieldName: "imoId",
+      aliasName: "search",
+      isAllowed: isAllowedValidators.normal(false, (value) => !!+value),
     },
     {
       fieldName: "page",
-      isAllowed: isAllowedValidators.normal(),
+      isAllowed: isAllowedValidators.normal(true),
     },
     {
       fieldName: "limit",
-      isAllowed: isAllowedValidators.normal(),
+      isAllowed: isAllowedValidators.normal(true),
     },
   ];
 
@@ -79,16 +97,20 @@ export const extractFilters = (query: object) => {
   let chosenFilters: Record<string, any> = {};
 
   for (const [name, value] of Object.entries(query)) {
-    const foundFilter = filterList.find(
+    const foundFilters = filterList.filter(
       (f) => (f.aliasName ?? f.fieldName) === name
     );
-    if (foundFilter) {
-      const res = foundFilter.isAllowed(`${value}`);
+    if (foundFilters.length) {
+      for (const foundFilter of foundFilters) {
+        const res = foundFilter.isAllowed(`${value}`);
 
-      if (res) {
-        chosenFilters[foundFilter.fieldName] = res;
+        if (res) {
+          chosenFilters[foundFilter.fieldName] = res;
+          break;
+        }
       }
     }
   }
+
   return { ...defaultFilters, ...chosenFilters };
 };

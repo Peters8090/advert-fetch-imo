@@ -157,8 +157,6 @@ export const IMPORTANT_DATA_FILE_PATH = "importantData.json";
 
     smtpTrans.sendMail(mailOpts, (error) => {
       if (error) {
-        console.log(error);
-
         res.writeHead(500);
         return res.end();
       } else {
