@@ -47,9 +47,11 @@ export const fetchNewOffers = async () => {
 
   let unpackedFiles = await fs.readdir(UNPACKED_ADVERTS_DIR);
 
-  const addedToDbFiles = ((await getAllAddedToDbFiles()) as {
-    fileName: string;
-  }[]).map((el) => el.fileName);
+  const addedToDbFiles = (
+    (await getAllAddedToDbFiles()) as {
+      fileName: string;
+    }[]
+  ).map((el) => el.fileName);
 
   const unpackedFilesNotAddedToDb = unpackedFiles.filter(
     (file) => !addedToDbFiles.includes(file)
@@ -109,6 +111,8 @@ export const fetchNewOffers = async () => {
     )?.elements?.[0]?.text as "calosc" | "roznica";
 
     if (zawartosc_pliku === "calosc") {
+      console.log("calosc" + fileName);
+
       await dropAllOffers();
     }
 
@@ -256,12 +260,13 @@ export const fetchNewOffers = async () => {
         limit: 20,
       })) as any;
 
-      const getPhotoFileNameRegex = (_offerId: string = "([0-9]+)") =>
+      const getPhotoFileNameRegex = (_offerId: string = "([0-9]+[a-z]*)") =>
         new RegExp(
           `^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_${_offerId}_([0-9]+).[a-z]+$`
         );
 
-      const [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
+      let [offerId] = photoFile.match(getPhotoFileNameRegex())!.slice(1);
+      offerId = offerId.toUpperCase();
 
       offer = offersWithPagination.docs.find((of) => {
         return of.imoId === offerId;
